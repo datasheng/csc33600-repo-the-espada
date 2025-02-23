@@ -22,5 +22,3 @@ Database: PostgreSQL – A robust relational database that efficiently handles s
     ```
     pip3 install -r requirements.txt
     ```
-
-    Testing
