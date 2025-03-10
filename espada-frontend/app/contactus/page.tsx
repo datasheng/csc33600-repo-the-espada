@@ -1,7 +1,7 @@
 export default function AboutUs(){
   return(
-  <div className="h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat">
-    <div className="bg-[url('/background.jpg.jpg')] h-screen w-[2000px] bg-cover flex items-center flex-col "
+  <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat">
+    <div className="bg-[url('/background.jpg.jpg')] h-screen w-[2000px] bg-cover flex items-center flex-col p-4"
     >
     <h1 className="text-4xl font-extrabold mb-6 ">About US</h1>
     <p className="text-black-600 mb-6">Welcome to our website!!!</p>
