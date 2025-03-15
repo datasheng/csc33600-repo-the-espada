@@ -1,0 +1,105 @@
+/* Map.module.css */
+.container {
+  height: 100vh;
+  position: relative;
+}
+
+.mapContainer {
+  height: 100vh;
+  width: 100%;
+  z-index: 1;
+}
+
+.hamburgerButton {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10000;
+  padding: 12px 15px;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.hamburgerButton:hover {
+  background-color: #FFD700;
+  color: black;
+}
+
+.filterMenu {
+  position: absolute;
+  left: 20px;
+  top: 80px;
+  width: 280px;
+  background-color: black;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.41);
+  padding: 16px; /* Reduced padding */
+  z-index: 9999;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+
+.filterMenu h2 {
+  margin-bottom: 16px; /* Reduced margin */
+  color: white;
+}
+
+.filterMenu label {
+  display: block;
+  margin-bottom: 8px; /* Reduced margin */
+  font-weight: 500;
+  color: white;
+}
+
+.filterMenu input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.filterMenu select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-top: 1px; /* Reduced margin */
+  margin-bottom: 0px; /* Reduced margin */
+  background-color: #ffffff;
+  color: #000000;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.filterMenu select option {
+  background-color: black;
+  color: white;
+}
+
+.filterMenu select option[value=""] {
+  background-color: #FFD700;
+  color: black;
+  font-weight: bold;
+}
+
+.clearFiltersButton {
+  padding: 8px 16px;
+  background-color: #FFD700;
+  color: black;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 16px; /* Reduced margin */
+  width: 100%;
+}
+
+.clearFiltersButton:hover {
+  background-color: #e6b800;
+}
