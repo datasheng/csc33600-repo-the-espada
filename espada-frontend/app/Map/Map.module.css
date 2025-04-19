@@ -1,27 +1,29 @@
 /* Map.module.css */
 .container {
-  height: 100vh;
+  margin-top: 60px; /* Add margin to account for header height */
   position: relative;
+  width: 100%;
+  height: calc(100vh - 60px); /* Subtract header height from viewport height */
 }
 
 .mapContainer {
-  height: 100vh;
   width: 100%;
+  height: 100%;
   z-index: 1;
 }
 
 .hamburgerButton {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 10000;
-  padding: 12px 15px;
+  top: 12px;
+  left: 12px;
+  z-index: 999;
+  padding: 8px 12px;
   background-color: black;
-  color: white;
+  color: #FFD700;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 24px;
+  font-size: 21px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
@@ -29,35 +31,47 @@
   transition: all 0.2s;
 }
 
+.hamburgerIcon {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+}
+
 .hamburgerButton:hover {
   background-color: #FFD700;
   color: black;
 }
 
+.hamburgerButton:hover div div {
+  background-color: black;
+}
+
 .filterMenu {
   position: absolute;
-  left: 20px;
-  top: 80px;
-  width: 280px;
-  background-color: black;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.41);
+  top: 70px; /* Position below the filters button */
+  left: 12px; /* Align with the filters button */
+  width: 250px; /* Reduced width */
+  background: rgba(0, 0, 0, 0.9);
   padding: 16px; /* Reduced padding */
-  z-index: 9999;
+  border-radius: 8px;
+  z-index: 998;
+  max-height: calc(100vh - 120px); /* Leave space for header and some bottom margin */
   overflow-y: auto;
-  max-height: calc(100vh - 100px);
 }
 
 .filterMenu h2 {
-  margin-bottom: 16px; /* Reduced margin */
-  color: white;
+  margin-bottom: 16px;
+  color: #FFD700; /* Changed from white to gold */
 }
 
 .filterMenu label {
   display: block;
-  margin-bottom: 8px; /* Reduced margin */
+  margin-bottom: 4px; /* Reduced margin */
   font-weight: 500;
   color: white;
+  font-size: 14px;
 }
 
 .filterMenu input[type="checkbox"] {
@@ -66,16 +80,17 @@
 
 .filterMenu select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px; /* Reduced padding */
   border-radius: 6px;
   border: 1px solid #e2e8f0;
-  margin-top: 1px; /* Reduced margin */
-  margin-bottom: 0px; /* Reduced margin */
+  margin-top: 4px;
+  margin-bottom: 2px; /* Reduced margin */
   background-color: #ffffff;
   color: #000000;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  font-size: 14px; /* Slightly smaller font */
 }
 
 .filterMenu select option {
@@ -90,16 +105,347 @@
 }
 
 .clearFiltersButton {
-  padding: 8px 16px;
+  padding: 8px 12px;
   background-color: #FFD700;
   color: black;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  margin-top: 16px; /* Reduced margin */
+  margin-top: 8px;
   width: 100%;
+  font-size: 14px;
 }
 
 .clearFiltersButton:hover {
   background-color: #e6b800;
+}
+
+.resultsList {
+  position: absolute;
+  top: 12px; /* Match the filterMenu's top position */
+  left: 270px; /* 250px (filterMenu width) + 12px (filterMenu left) + 12px (gap) */
+  width: 300px;
+  max-height: calc(100vh - 120px); /* Match filterMenu's max-height */
+  background: rgba(0, 0, 0, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  overflow-y: auto;
+  z-index: 998;
+}
+
+.resultsList h3 {
+  color: white;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.storeCard {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.storeCard:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.storeCard.selected {
+  background-color: rgba(255, 215, 0, 0.2);
+  border: 1px solid #FFD700;
+}
+
+.storeCard h4 {
+  color: #FFD700;
+  margin: 0 0 8px 0;
+}
+
+.storeCard p {
+  color: white;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.hours {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 12px !important;
+}
+
+.price {
+  color: #FFD700 !important;
+  font-weight: bold;
+}
+
+.chainDetails {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chainDetails span {
+  background-color: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.applyFiltersButton {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #FFD700;
+  color: black;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 8px 0;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.applyFiltersButton:hover {
+  background-color: #ffd900;
+}
+
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.resultsHeader h3 {
+  color: white;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #FFD700;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.selectedMarker {
+  filter: brightness(1.0) saturate(5) sepia(0.5);
+  transition: all 0.3s ease;
+}
+
+.resultsControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.priceSortSelect {
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+.priceSortSelect:hover {
+  background: rgba(255, 215, 0, 0.2);
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgb(0, 0, 0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.logoLink {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  object-fit: contain;
+  clip-path: inset(1px 1px 1px 1px); /* Crop 1px from all sides */
+  position: relative;
+  display: block;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.navLink {
+  color: #FFD700;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #FFF;
+}
+
+/* Base auth button style (will be used for login) */
+.authButton {
+  background: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+/* Base hover state (will be used for login) */
+.authButton:hover {
+  background: #FFD700;
+  color: black;
+}
+
+/* Sign up button specific styles */
+.authButton[href="/signup"] {
+  background: #FFD700;
+  color: black;
+  border-color: #FFD700;
+}
+
+/* Sign up button hover state */
+.authButton[href="/signup"]:hover {
+  background: #e72114;
+  border-color: #e72114;
+  color: white;
+}
+
+/* Keep original hover state for login button */
+.authButton[href="/login"]:hover {
+  color: black;
+  border-color: #e6b800
+}
+
+.extendedInfo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 350px;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 998;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.extendedInfo h2 {
+  color: #FFD700;
+  margin-bottom: 16px;
+  font-size: 24px;
+}
+
+.extendedInfo .address {
+  color: white;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.extendedInfo .hours {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.extendedInfo .priceSection {
+  background: rgba(255, 215, 0, 0.1);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.extendedInfo .price {
+  color: #FFD700;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.extendedInfo .details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.extendedInfo .detail {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.extendedInfo .detail label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.extendedInfo .detail span {
+  color: #FFD700;
+  font-size: 16px;
+}
+
+.closeExtendedInfo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #FFD700;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: all 0.2s ease;
+}
+
+.closeExtendedInfo:hover {
+  color: white;
 }
