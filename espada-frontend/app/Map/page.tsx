@@ -7,6 +7,110 @@ import Link from 'next/link';
 // Add import for motion
 import { motion } from "framer-motion"
 
+// Add this utility function at the top of the file
+const getStoreStatus = (hours: string): { isOpen: boolean; nextChange: string } => {
+  // Get current EST time
+  const now = new Date();
+  const est = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true,
+    weekday: 'short'
+  });
+  
+  const currentDay = now.toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short' });
+  const currentTime = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false });
+  
+  // Parse store hours
+  const hoursRegex = /([a-zA-Z]+)-([a-zA-Z]+):\s*(\d+(?::\d+)?[AP]M)-(\d+(?::\d+)?[AP]M)/g;
+  const daysMap: { [key: string]: number } = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  let schedule: { start: Date, end: Date }[] = [];
+  
+  let match;
+  while ((match = hoursRegex.exec(hours)) !== null) {
+    const [_, startDay, endDay, startTime, endTime] = match;
+    const startHour = parseInt(startTime.replace(/[APM]/g, ''));
+    const endHour = parseInt(endTime.replace(/[APM]/g, ''));
+    
+    // Create Date objects for start and end times
+    const start = new Date();
+    start.setHours(startTime.includes('PM') ? startHour + 12 : startHour, 0);
+    const end = new Date();
+    end.setHours(endTime.includes('PM') ? endHour + 12 : endHour, 0);
+    
+    schedule.push({ start, end });
+  }
+  
+  // Check if currently open
+  const currentHour = parseInt(currentTime.split(':')[0]);
+  const isOpen = schedule.some(({ start, end }) => 
+    currentHour >= start.getHours() && currentHour < end.getHours()
+  );
+  
+  // Find next opening/closing time
+  let nextChange = '';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  let nextOpeningDay = today;
+  let nextOpeningTime = '';
+
+  // Parse store hours for each day
+  const daysArray = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  
+  // Find the next opening time
+  if (!isOpen) {
+    let daysToCheck = 7; // Check up to a week ahead
+    let currentCheckDay = today;
+    
+    while (daysToCheck > 0) {
+      const checkDayName = currentCheckDay.toLocaleString('en-US', { 
+        timeZone: 'America/New_York', 
+        weekday: 'short' 
+      });
+      
+      // Look for this day's hours in the schedule
+      const dayRegex = new RegExp(`${checkDayName}[^,]*?:(\\s*\\d+(?::\\d+)?[AP]M)`, 'i');
+      const match = hours.match(dayRegex);
+
+      if (match && !hours.includes(`${checkDayName}: Closed`)) {
+        nextOpeningDay = currentCheckDay;
+        nextOpeningTime = match[1].trim();
+        break;
+      }
+
+      // Move to next day
+      currentCheckDay = new Date(currentCheckDay);
+      currentCheckDay.setDate(currentCheckDay.getDate() + 1);
+      daysToCheck--;
+    }
+
+    if (nextOpeningTime) {
+      const dayName = nextOpeningDay.toLocaleString('en-US', { 
+        timeZone: 'America/New_York', 
+        weekday: 'short' 
+      });
+      nextChange = `Opens ${nextOpeningTime} ${dayName}`;
+    } else {
+      nextChange = 'Temporarily closed';
+    }
+  } else {
+    const closing = schedule.find(({ end }) => currentHour < end.getHours());
+    if (closing) {
+      nextChange = `Closes at ${closing.end.toLocaleString('en-US', { 
+        hour: 'numeric', 
+        minute: 'numeric', 
+        hour12: true 
+      })}`;
+    }
+  }
+  
+  return { isOpen, nextChange };
+};
+
 interface Store {
   id: string;
   name: string;
@@ -19,6 +123,9 @@ interface Store {
   style: string;
   thickness: string;
   length: string;
+  rating: number;      // Add rating (0-5)
+  numReviews: number;  // Add number of reviews
+  color: string;  // Add this property
 }
 
 interface CustomMarker extends Marker {
@@ -27,6 +134,59 @@ interface CustomMarker extends Marker {
 
 const isValidIcon = (icon: Icon | null): icon is Icon => {
   return icon !== null;
+};
+
+const StarRating: React.FC<{ rating: number; numReviews: number }> = ({ rating, numReviews }) => {
+  return (
+    <div className={styles.starRating}>
+      <span className={styles.ratingNumber}>{rating.toFixed(1)}</span>
+      <div className={styles.stars}>
+        {[...Array(5)].map((_, index) => {
+          const fillPercentage = Math.min(Math.max((rating - index) * 100, 0), 100);
+          return (
+            <span 
+              key={index} 
+              className={styles.star}
+              style={{
+                position: 'relative',
+                display: 'inline-block'
+              }}
+            >
+              <span className={styles.starBackground}>★</span>
+              <span 
+                className={styles.starFill}
+                style={{
+                  width: `${fillPercentage}%`,
+                  overflow: 'hidden',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0
+                }}
+              >
+                ★
+              </span>
+            </span>
+          );
+        })}
+      </div>
+      <span className={styles.reviewCount}>({numReviews})</span>
+    </div>
+  );
+};
+
+// Add this new component
+const StoreStatus: React.FC<{ hours: string }> = ({ hours }) => {
+  const { isOpen, nextChange } = getStoreStatus(hours);
+  
+  return (
+    <div className={styles.storeStatus}>
+      <span className={`${styles.statusDot} ${isOpen ? styles.open : styles.closed}`} />
+      <span className={styles.statusText}>
+        {isOpen ? 'Open' : 'Closed'}
+      </span>
+      <span className={styles.nextChange}>{nextChange}</span>
+    </div>
+  );
 };
 
 const MapComponent: React.FC = () => {
@@ -56,6 +216,7 @@ const MapComponent: React.FC = () => {
     chainStyle: "",
     thickness: "",
     length: "",
+    color: "",    // Add this
   });
 
   const [pendingFilters, setPendingFilters] = useState({
@@ -63,6 +224,7 @@ const MapComponent: React.FC = () => {
     chainStyle: "",
     thickness: "",
     length: "",
+    color: "",    // Add this
   });
 
   // Add state for price sort in results
@@ -71,6 +233,9 @@ const MapComponent: React.FC = () => {
   // Add new state for extended info
   const [showExtendedInfo, setShowExtendedInfo] = useState(false);
   const [selectedStoreData, setSelectedStoreData] = useState<Store | null>(null);
+
+  // Add new state for hours dropdown
+  const [showHours, setShowHours] = useState(false);
 
   // Initialize icons when the component mounts
   useEffect(() => {
@@ -125,12 +290,14 @@ const MapComponent: React.FC = () => {
       chainStyle: "",
       thickness: "",
       length: "",
+      color: "",    // Add this
     });
     setCurrentFilters({
       goldPurity: "",
       chainStyle: "",
       thickness: "",
       length: "",
+      color: "",    // Add this
     });
     if (isValidIcon(goldIcon)) {
       markers.forEach(marker => marker.setIcon(goldIcon));
@@ -190,7 +357,10 @@ const MapComponent: React.FC = () => {
       purity: 18,
       style: "Cable",
       thickness: "2 mm",  // Added space
-      length: "20 in"     // Added space
+      length: "20 in",     // Added space
+      rating: 4.5,      // Add rating (0-5)
+      numReviews: 128,  // Add number of reviews
+      color: "Yellow",
     },
     {
       id: '2',
@@ -203,20 +373,26 @@ const MapComponent: React.FC = () => {
       purity: 14,
       style: "Miami Cuban",
       thickness: "4 mm",  // Added space
-      length: "24 in"     // Added space
+      length: "24 in",     // Added space
+      rating: 4.2,      // Add rating (0-5)
+      numReviews: 86,  // Add number of reviews
+      color: "Rose",
     },
     {
       id: '3',
       name: "Royal Gold & Jewelry",
       address: "28 E 23rd St, New York, NY 10010",
-      hours: "Mon-Sat: 11AM-8PM, Sun: Closed",
+      hours: "Mon-Sat: 11AM-8PM, Sun: Closed", // Changed from 8PM to 11PM
       lat: 40.7410,
       lng: -73.9867,
-      price: 1899.99,  // Changed from pricePerGram
+      price: 1899.99,
       purity: 22,
       style: "Franco",
-      thickness: "3 mm",  // Added space
-      length: "18 in"     // Added space
+      thickness: "3 mm",
+      length: "18 in",
+      rating: 4.8,
+      numReviews: 234,
+      color: "Two-Color",
     }
   ];
 
@@ -293,6 +469,54 @@ const MapComponent: React.FC = () => {
     }, 1000);
   };
 
+  // Add this function to parse hours string into structured data
+  const parseStoreHours = (hours: string) => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const hoursMap: { [key: string]: string } = {};
+    
+    // Initialize all days as Closed
+    days.forEach(day => {
+      hoursMap[day] = 'Closed';
+    });
+  
+    // Match patterns like "Mon-Sat: 10AM-6PM" or "Sun: Closed"
+    const rangeRegex = /([a-zA-Z]{3})-([a-zA-Z]{3}):\s*((?:\d+(?::\d+)?[AP]M-\d+(?::\d+)?[AP]M)|Closed)/g;
+    const singleRegex = /([a-zA-Z]{3}):\s*((?:\d+(?::\d+)?[AP]M-\d+(?::\d+)?[AP]M)|Closed)/g;
+  
+    let match;
+  
+    // First check for ranges
+    while ((match = rangeRegex.exec(hours)) !== null) {
+      const [_, startDay, endDay, timeRange] = match;
+      const startIdx = days.indexOf(startDay);
+      const endIdx = days.indexOf(endDay);
+      
+      // Handle the range of days
+      if (startIdx !== -1 && endIdx !== -1) {
+        // Make sure to handle wrap-around (e.g., if endIdx < startIdx)
+        const dayIndices = startIdx <= endIdx 
+          ? Array.from({ length: endIdx - startIdx + 1 }, (_, i) => startIdx + i)
+          : [...Array.from({ length: days.length - startIdx }, (_, i) => startIdx + i), 
+             ...Array.from({ length: endIdx + 1 }, (_, i) => i)];
+        
+        dayIndices.forEach(idx => {
+          hoursMap[days[idx]] = timeRange;
+        });
+      }
+    }
+  
+    // Then check for individual days to override any ranges
+    hours.replace(rangeRegex, ''); // Remove the ranges we've already processed
+    while ((match = singleRegex.exec(hours)) !== null) {
+      const [_, day, timeRange] = match;
+      if (days.includes(day)) {
+        hoursMap[day] = timeRange;
+      }
+    }
+  
+    return hoursMap;
+  };
+
   // Update markers when filters or map changes
   useEffect(() => {
     const updateMarkers = async () => {
@@ -310,6 +534,7 @@ const MapComponent: React.FC = () => {
           if (currentFilters.chainStyle && store.style !== currentFilters.chainStyle) return false;
           if (currentFilters.thickness && store.thickness !== currentFilters.thickness) return false;
           if (currentFilters.length && store.length !== currentFilters.length) return false;
+          if (currentFilters.color && store.color !== currentFilters.color) return false;  // Add this
           return true;
         });
 
@@ -441,7 +666,7 @@ const MapComponent: React.FC = () => {
             
             <div style={{ marginBottom: "24px" }}>
               <div style={{ marginBottom: "24px" }}>
-                <label>Gold Quality</label>
+                <label>Gold Purity</label>
                 <select
                   name="goldPurity"
                   value={pendingFilters.goldPurity}
@@ -483,8 +708,25 @@ const MapComponent: React.FC = () => {
                 </select>
               </div>
 
+              {/* Add this after the Chain Type filter */}
               <div style={{ marginBottom: "24px" }}>
-                <label>Thickness</label>
+                <label>Chain Color</label>
+                <select
+                  name="color"
+                  value={pendingFilters.color}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">All Colors</option>
+                  <option value="Yellow">Yellow Gold</option>
+                  <option value="Rose">Rose Gold</option>
+                  <option value="White">White Gold</option>
+                  <option value="Two-Color">Two-Tone</option>
+                  <option value="Tri-Color">Tri-Color</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <label>Chain Thickness</label>
                 <select
                   name="thickness"
                   value={pendingFilters.thickness}  // Changed from filters.thickness
@@ -500,7 +742,7 @@ const MapComponent: React.FC = () => {
               </div>
 
               <div style={{ marginBottom: "24px" }}>
-                <label>Length</label>
+                <label>Chain Length</label>
                 <select
                   name="length"
                   value={pendingFilters.length}  // Changed from filters.length
@@ -564,11 +806,22 @@ const MapComponent: React.FC = () => {
                 onClick={() => handleStoreClick(store.id)}
               >
                 <h4>{store.name}</h4>
+                <StarRating rating={store.rating} numReviews={store.numReviews} />
                 <p>{store.address}</p>
-                <p className={styles.hours}>{store.hours}</p>
+                <div className={styles.storeStatus}>
+                  <span className={`${styles.statusDot} ${getStoreStatus(store.hours).isOpen ? styles.open : styles.closed}`} />
+                  <span className={styles.statusText}>
+                    {getStoreStatus(store.hours).isOpen ? 'Open' : 'Closed'}
+                  </span>
+                  <span className={styles.statusBullet}>•</span>
+                  <span className={styles.nextChange}>
+                    {getStoreStatus(store.hours).nextChange}
+                  </span>
+                </div>
                 <p className={styles.price}>${store.price.toLocaleString()}</p>
                 <div className={styles.chainDetails}>
                   <span>{store.purity}K</span>
+                  <span>{store.color}</span>
                   <span>{store.style}</span>
                   <span>{store.thickness}</span>
                   <span>{store.length}</span>
@@ -587,19 +840,51 @@ const MapComponent: React.FC = () => {
               ×
             </button>
             <h2>{selectedStoreData.name}</h2>
+            <StarRating rating={selectedStoreData.rating} numReviews={selectedStoreData.numReviews} />
             <p className={styles.address}>{selectedStoreData.address}</p>
-            <p className={styles.hours}>{selectedStoreData.hours}</p>
             
-            <div className={styles.priceSection}>
-              <div className={styles.price}>
-                ${selectedStoreData.price.toLocaleString()}
+            <div className={styles.extendedInfoStatus}>
+              <div 
+                className={styles.statusHeader}
+                onClick={() => setShowHours(!showHours)}
+              >
+                <div className={styles.statusInfo}>
+                  <span className={`${styles.statusDot} ${getStoreStatus(selectedStoreData.hours).isOpen ? styles.open : styles.closed}`} />
+                  <span className={styles.statusText}>
+                    {getStoreStatus(selectedStoreData.hours).isOpen ? 'Open' : 'Closed'}
+                  </span>
+                  <span className={styles.statusBullet}>•</span>
+                  <span className={styles.nextChange}>
+                    {getStoreStatus(selectedStoreData.hours).nextChange}
+                  </span>
+                </div>
+                <span className={`${styles.dropdownArrow} ${showHours ? styles.open : ''}`}>▼</span>
               </div>
+              
+              {showHours && (
+                <div className={styles.hoursDropdown}>
+                  {Object.entries(parseStoreHours(selectedStoreData.hours)).map(([day, hours]) => (
+                    <div key={day} className={styles.hourRow}>
+                      <span className={styles.dayName}>{day}</span>
+                      <span>{hours}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             
+            <div className={styles.priceSection}>
+              <div className={styles.price}>${selectedStoreData.price.toLocaleString()}</div>
+            </div>
+
             <div className={styles.details}>
               <div className={styles.detail}>
                 <label>Purity</label>
                 <span>{selectedStoreData.purity}K Gold</span>
+              </div>
+              <div className={styles.detail}>
+                <label>Color</label>
+                <span>{selectedStoreData.color}</span>
               </div>
               <div className={styles.detail}>
                 <label>Style</label>

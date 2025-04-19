@@ -20,6 +20,7 @@
   padding: 8px 12px;
   background-color: black;
   color: #FFD700;
+  font-weight: bold;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -64,6 +65,7 @@
 .filterMenu h2 {
   margin-bottom: 16px;
   color: #FFD700; /* Changed from white to gold */
+  font-weight: bold;
 }
 
 .filterMenu label {
@@ -91,6 +93,7 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   font-size: 14px; /* Slightly smaller font */
+  cursor: pointer;
 }
 
 .filterMenu select option {
@@ -114,18 +117,20 @@
   margin-top: 8px;
   width: 100%;
   font-size: 14px;
+  font-weight: bold;
 }
 
 .clearFiltersButton:hover {
-  background-color: #e6b800;
+  background-color: #e72114;
+  color: white;
 }
 
 .resultsList {
   position: absolute;
   top: 12px; /* Match the filterMenu's top position */
   left: 270px; /* 250px (filterMenu width) + 12px (filterMenu left) + 12px (gap) */
-  width: 300px;
-  max-height: calc(100vh - 120px); /* Match filterMenu's max-height */
+  width: 369px; /* Increased from 300px to 380px */
+  max-height: calc(100vh - 79px); /* Match filterMenu's max-height */
   background: rgba(0, 0, 0, 0.9);
   padding: 20px;
   border-radius: 8px;
@@ -135,9 +140,7 @@
 
 .resultsList h3 {
   color: white;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 18px;
 }
 
 .storeCard {
@@ -196,18 +199,20 @@
 .applyFiltersButton {
   width: 100%;
   padding: 8px 12px;
-  background-color: #FFD700;
-  color: black;
-  border: none;
-  border-radius: 6px;
+  background: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  border-radius: 4px;
   cursor: pointer;
   margin: 8px 0;
-  font-weight: bold;
   font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
 }
 
 .applyFiltersButton:hover {
-  background-color: #ffd900;
+  background: #FFD700;
+  color: black;
 }
 
 .resultsHeader {
@@ -239,7 +244,7 @@
 }
 
 .closeButton:hover {
-  background-color: rgba(255, 215, 0, 0.1);
+  color: white;
 }
 
 .selectedMarker {
@@ -258,7 +263,8 @@
   color: #FFD700;
   border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 4px;
-  padding: 4px 8px;
+  padding: 4px 6px;
+  cursor: pointer;
   font-size: 14px;
 }
 
@@ -303,8 +309,9 @@
 .navLink {
   color: #FFD700;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 18px; /* Increased from 16px */
   transition: color 0.2s ease;
+  font-weight: bold;
 }
 
 .navLink:hover {
@@ -319,8 +326,14 @@
   padding: 8px 16px;
   border-radius: 4px;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 16px; /* Increased from 14px */
   transition: all 0.2s ease;
+  font-weight: bold;
+  height: 36px; /* Add fixed height */
+  line-height: 20px; /* Adjust line height to center text vertically */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Base hover state (will be used for login) */
@@ -358,9 +371,8 @@
   padding: 20px;
   border-radius: 8px;
   z-index: 998;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  max-height: calc(100vh - 175px);
+  overflow-y: scroll;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   animation: slideIn 0.3s ease-out;
 }
@@ -399,6 +411,7 @@
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 20px;
+  text-align: center; /* Add this line */
 }
 
 .extendedInfo .price {
@@ -406,6 +419,8 @@
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 8px;
+  display: block; /* Add this line */
+  text-align: center; /* Add this line */
 }
 
 .extendedInfo .details {
@@ -448,4 +463,213 @@
 
 .closeExtendedInfo:hover {
   color: white;
+}
+
+.starRating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  position: relative;
+  display: inline-block;
+  font-size: 18px;
+}
+
+.starBackground {
+  color: rgba(255, 215, 0, 0.2);
+}
+
+.starFill {
+  color: #FFD700;
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.reviewCount {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+/* Extended info specific styles */
+.extendedInfo .starRating {
+  margin: 12px 0;
+}
+
+.extendedInfo .star {
+  font-size: 24px;
+}
+
+.extendedInfo .reviewCount {
+  font-size: 16px;
+}
+
+.ratingNumber {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 2px;
+  margin-right: 0px;
+}
+
+/* For extended info view */
+.extendedInfo .ratingNumber {
+  font-size: 20px;
+}
+
+/* Base store status styles (for results list) */
+.storeStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+/* Extended info store status styles */
+.extendedInfoStatus {
+  margin: 16px 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.statusHeader {
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statusInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduced from 8px to 6px */
+}
+
+.statusInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduced from 8px to 6px */
+}
+
+.hoursDropdown {
+  display: block; /* Changed from 'none' to always show when rendered */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hourRow {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.dropdownArrow {
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+  display: inline-block;
+  color: white;
+}
+
+.dropdownArrow.open {
+  transform: rotate(180deg);
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.detail {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.detail label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.detail span {
+  color: #FFD700;
+  font-size: 16px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.statusDot.open {
+  background-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.statusDot.closed {
+  background-color: #f44336;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.5);
+}
+
+.statusText {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nextChange {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+.statusBullet {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 -1px; /* Reduced from 8px to 4px */
+}
+
+/* Scrollbar styles */
+.filterMenu::-webkit-scrollbar,
+.resultsList::-webkit-scrollbar,
+.extendedInfo::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filterMenu::-webkit-scrollbar-track,
+.resultsList::-webkit-scrollbar-track,
+.extendedInfo::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.filterMenu::-webkit-scrollbar-thumb,
+.resultsList::-webkit-scrollbar-thumb,
+.extendedInfo::-webkit-scrollbar-thumb {
+  background: #FFD700;
+  border-radius: 4px;
+}
+
+.filterMenu::-webkit-scrollbar-thumb:hover,
+.resultsList::-webkit-scrollbar-thumb:hover,
+.extendedInfo::-webkit-scrollbar-thumb:hover {
+  background: #e6b800;
 }
