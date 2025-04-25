@@ -189,6 +189,10 @@ const StoreStatus: React.FC<{ hours: string }> = ({ hours }) => {
   );
 };
 
+import Header from '../components/Header';
+
+// ...rest of your imports
+
 const MapComponent: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -605,25 +609,7 @@ const MapComponent: React.FC = () => {
 
   return (
     <>
-      <header className={styles.header}>
-        <Link href="/heroSection" className={styles.logoLink}>
-          <Image
-            src="/goldlinks-header-logo.svg" // Changed from /logo.png
-            alt="GoldLinks Logo"             // Updated alt text
-            width={240}
-            height={60}
-            className={styles.logo}
-          />
-        </Link>
-        
-        <nav className={styles.nav}>
-          <Link href="/AboutUs" className={styles.navLink}>About Us</Link>
-          <Link href="/ContactUs" className={styles.navLink}>Contact</Link>
-          <Link href="/login" className={styles.authButton}>Login</Link>
-          <Link href="/signup" className={styles.authButton}>Sign Up</Link>
-        </nav>
-      </header>
-
+      <Header />
       <div className={styles.container}>
         <button
           onClick={toggleMenu}
