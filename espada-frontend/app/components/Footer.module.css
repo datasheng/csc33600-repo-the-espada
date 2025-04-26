@@ -1,0 +1,146 @@
+.footer {
+  background-color: black;
+  color: white;
+  padding: 0px 0 16px; /* Reduced from 40px 0 20px */
+  border-top: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 0.5fr 0.6fr 0.5fr 1fr;
+  gap: 24px;
+}
+
+.section h3 {
+  color: #FFD700;
+  font-size: 18px; /* Reduced from 18px */
+  margin-top: 40px;
+  margin-bottom: 12px; /* Reduced from 16px */
+  font-weight: bold;
+}
+
+.section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.section ul li {
+  margin-bottom: 8px; /* Reduced from 12px */
+}
+
+.section ul li a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-size: 16px;
+}
+
+.section ul li a:hover {
+  color: #FFD700;
+}
+
+.section p {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+.footerLogo {
+  margin-top: 15px;
+  object-fit: contain;
+  width: auto;
+  height: auto;
+  max-width: 200px; /* Add this line to ensure consistent size */
+}
+
+.bottom {
+  margin-top: 24px; /* Reduced from 40px */
+  padding-top: 16px; /* Reduced from 20px */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.subscribe {
+  margin-top: 0;
+}
+
+.subscribe h3 {
+  color: #FFD700;
+  font-size: 16px;
+  margin-bottom: 12px;
+  margin-top: 50px; /* Match other section headers */
+}
+
+.emailInput {
+  display: flex;
+  gap: 8px;
+  width: 300px; /* Set a fixed width for the email input section */
+}
+
+.subscribeInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 14px;
+}
+
+.subscribeInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.subscribeInput:focus {
+  outline: none;
+  border-color: #FFD700;
+}
+
+.subscribeButton {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.subscribeButton:hover {
+  background: #FFD700;
+  color: black;
+}
+
+/* Remove these styles as they're no longer needed */
+/* .socials {
+  margin-top: 0;
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+} */
+
+.socials h3 {
+  margin-top: 50px; /* Match other section headers */
+}
+
+/* Update media queries for new grid layout */
+@media (max-width: 768px) {
+  .content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .section:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}
