@@ -87,3 +87,135 @@
   color: black;
   border-color: #e6b800
 }
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownButton {
+  color: #FFD700;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;  /* Match navLink size */
+  font-weight: bold; /* Match navLink weight */
+}
+
+.dropdownArrow {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.dropdownArrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdownContent {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: black;
+  min-width: 200px;
+  padding: 8px 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dropdownItem {
+  color: rgba(255, 255, 255, 0.7);
+  padding: 12px 0;  /* Adjust padding to account for margin */
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  position: relative;
+  padding-right: 24px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  margin: 0 16px;  /* Add horizontal margin */
+  width: calc(100% - 32px);  /* Account for margins */
+}
+
+/* Remove border from last item */
+.dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.dropdownItem:hover {
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  cursor: pointer;
+}
+
+.dropdownButton:hover {
+  color: white;
+}
+
+.submenuArrow {
+  position: absolute;
+  right: 16px;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.submenuArrow.open {
+  transform: rotate(90deg);
+}
+
+.submenuContent {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background: black;
+  padding: 8px 0;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Add specific width for chain type submenu */
+.dropdown [data-submenu="type"] .submenuContent {
+  min-width: 360px;
+}
+
+/* Add specific width for purity submenu */
+.dropdown [data-submenu="purity"] .submenuContent {
+  min-width: 160px;
+}
+
+.submenuContent .dropdownItem {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  margin: 0 16px;
+  padding: 12px 0;
+  width: calc(100% - 32px);
+}
+
+.submenuContent .dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.twoColumnSubmenu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 8px 0;
+}
+
+.submenuColumn {
+  min-width: 160px;
+}
+
+.seeAllButton {
+  text-align: center;
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.seeAllButton:hover {
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+}

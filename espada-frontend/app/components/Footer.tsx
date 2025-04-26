@@ -20,7 +20,8 @@ export default function Footer() {
         <div className={styles.section}>
           <h3>Features</h3>
           <ul>
-            <li><Link href="/Map">Map</Link></li>
+            <li><Link href="/search">Find Gold Chains</Link></li>
+            <li><Link href="/Map">Store Map</Link></li>
           </ul>
         </div>
 
