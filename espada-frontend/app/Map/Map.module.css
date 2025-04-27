@@ -161,9 +161,21 @@
   border: 1px solid #FFD700;
 }
 
-.storeCard h4 {
+.storeCard h3 {
   color: #FFD700;
+  font-size: 1.35rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.storeCard h4 {
+  color: white;
+  font-size: 1.20rem;
+  font-style: italic;
   margin: 0 0 8px 0;
+  font-weight: bold;
 }
 
 .storeCard p {
@@ -300,8 +312,20 @@
 
 .extendedInfo h2 {
   color: #FFD700;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  padding-right: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.extendedInfo h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-style: italic;
   margin-bottom: 16px;
-  font-size: 24px;
+  font-weight: bold;
 }
 
 .extendedInfo .address {
@@ -582,4 +606,44 @@
 .resultsList::-webkit-scrollbar-thumb:hover,
 .extendedInfo::-webkit-scrollbar-thumb:hover {
   background: #e6b800;
+}
+
+/* Add to Map.module.css */
+.actionButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.directionsButton,
+.detailsButton {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+}
+
+.directionsButton {
+  background-color: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  border: 1px solid #FFD700;
+}
+
+.detailsButton {
+  background-color: #FFD700;
+  color: black;
+}
+
+.directionsButton:hover {
+  background-color: rgba(255, 215, 0, 0.2);
+}
+
+.detailsButton:hover {
+  background-color: #e6b800;
 }
