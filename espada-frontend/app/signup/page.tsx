@@ -9,9 +9,11 @@ export default function Signup() {
             <Header />
             <main>
                 <div className='text-lg'>
-                    <div className="flex flex-col items-center justify-center mx-auto h-screen px-10 py-8 drop-shadow-sm">
-                        <div className="px-14 py-8 rounded-lg border border-solid border-grey border-10">
-                            <h1 className="font-bold py-2 text-center text-2xl mb-2">Sign Up</h1>
+                    <div className=" relative  bg-[url('/hero-background.jpg')] 
+                    bg-cover bg-center bg-no-repeat min-h-screen flex flex-col items-center justify-center mx-auto h-screen px-10 py-8 drop-shadow-sm">
+                        <div className="absolute inset-0 bg-white/70 z-0"></div>
+                        <div className=" relative bg-black/70 text-gray-100 border-yellow-400 border-10 px-14 py-8 rounded-lg border border-solid  border-10">
+                            <h1 className="font-bold py-2 text-center text-2xl mb-2 text-yellow-400">Sign Up</h1>
                             <Form action="/login">
                                 <div className="mb-4">
                                     <label className="block mb-2">First Name</label>
@@ -30,8 +32,8 @@ export default function Signup() {
                                     <input type="password" className="border border-solid border-grey w-full"></input>
                                 </div>
                                 <div className="flex justify-center">
-                                    <button className="text-white rounded-lg border border-solid border-blue transition-colors flex items-center 
-                                    justify-center bg-blue-600/70 text-background gap-2 dark:hover:bg-[#3f4391] text-base:text-base h-10 base:h-12 px-4 base:px-5
+                                    <button className="text-white rounded-lg border border-solid border-yellow-400  flex items-center 
+                                    justify-center b hover:bg-yellow-400 hover:text-black transition-colors duration-300 h-10 base:h-12 px-4 base:px-5
                                     drop-shadow-sm"
                                     type="submit">Sign Up</button>
                                 </div>

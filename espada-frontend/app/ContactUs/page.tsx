@@ -11,18 +11,36 @@ export default function ContactUs(){
       <main>
         <div className=" bg-[url('/nyc.jpg')] h-screen w-full bg-cover flex items-center flex-col p-4 min-h-screen  justify-center bg-center bg-no-repeat">
         
-          <div className="bg-black text-white p-8 rounded-lg ">
-            <h1 className="text-4xl font-extrabold mb-6 text-gray-50">ContactUS</h1>
-            <a  href="mailto:support@gmail.com"className="text-gray-50 mb-6  text-lg   flex items-center hover:bg-black-700 space-x-2  hover:text-indigo-500 ">
-              <MdEmail size={24}/>
-              <span>Email: support@gmail.com</span>
-            </a>
-            <a href="tel:+1234567890" className="text-gray-50 text-lg flex items-center space-x-2 hover:text-indigo-500">
-                <FaPhoneAlt size={24} className="text-gray-50" /> {/* Correctly passing className and size */}
-                <span>Phone: +1 (234) 567-890</span>
-              </a>
+          <div className="flex flex-col md:flex-row gap-10">
+            <div className=" bg-black/70 text-gray-100 p-10 rounded-lg shadow-lg w-80 flex flex-col items-center space-y-4 ring-1 ring-yellow-500/30">
+            <FaPhoneAlt size={40} className="text-yellow-400 mb-2" />
             
-          </div>
+            <h2 className="text-2xl font-bold mb-4">Call Us</h2>
+            <p className="font-semibold text-lg mb-3"> +1(123)-456-2233</p>
+            <div className="text-center text-sm space-y-2">
+              <p className="font-bold ">Phone Hours:</p>
+              <p>Monday-Friday: 9:00 am - 7:00 pm</p>
+              
+              <p>Saturday & Sunday: 10:00 am - 4:00 pm</p>
+              
+             </div>
+            </div>
+
+            <div className=" bg-black/70 text-gray-100 p-10 rounded-lg shadow-lg w-80 flex flex-col items-center space-y-4 ring-1 ring-yellow-500/30">
+              <MdEmail size={40} className="text-yellow-400 mb-2"/>
+
+              <h2 className="text-2xl font-bold mb-4">Email Us</h2>
+              <p className="text-lg font-semibold mb-2">support@gmail.com</p>
+              <p className="text-center text-sm">Submit an email and we will get back to you soon! </p>
+            <div className="text-center text-sm space-y-2">
+              <p className="font-bold">Email Hours:</p>
+              <p>Monday-Friday: 9:00 am - 7:00 pm</p>
+              
+              <p>Saturday &Sunday: 10:00 am - 4:00 pm</p>
+             </div>
+            </div>
+            
+        </div>
         </div>
       </main>
       <Footer />
