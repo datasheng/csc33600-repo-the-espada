@@ -4,12 +4,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Header.module.css';
 
+// Update the type definition to be more specific
+type ChainType = string | {
+  name: string;
+  value: string;
+  special: boolean;
+};
+
 const Header: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
 
-  const chainPurities = ["10K", "14K", "18K", "22K"];
-  const chainTypes = [
+  // Update the chainTypes array with proper typing
+  const chainTypes: ChainType[] = [
     "Anchor",
     "Ball",
     "Box",
@@ -17,13 +24,12 @@ const Header: React.FC = () => {
     "Cable",
     "Figaro",
     "Figarope",
-    "FlatCurb",
+    "Flat Curb",
     "Franco",
     "Herringbone",
-    "Link",
     "Mariner",
-    "MiamiCuban",
-    "MoonCut",
+    "Miami Cuban",
+    "Moon Cut",
     "Rope",
     "Wheat"
   ];
@@ -39,10 +45,14 @@ const Header: React.FC = () => {
     setActiveSubmenu(activeSubmenu === submenu ? null : submenu);
   };
 
-  // Split chain types into two columns
-  const midpoint = Math.ceil(chainTypes.length / 2);
-  const leftColumnTypes = chainTypes.slice(0, midpoint);
-  const rightColumnTypes = chainTypes.slice(midpoint);
+  // First, let's update the column splitting logic to maintain proper typing
+  const splitChainTypes = (types: ChainType[]): [ChainType[], ChainType[]] => {
+    const midpoint = Math.ceil(types.length / 2);
+    return [types.slice(0, midpoint), types.slice(midpoint)];
+  };
+
+  // Update the column variables
+  const [leftColumnTypes, rightColumnTypes] = splitChainTypes(chainTypes);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -94,11 +104,20 @@ const Header: React.FC = () => {
                 
                 {activeSubmenu === 'purity' && (
                   <div className={styles.submenuContent}>
-                    {chainPurities.map(purity => (
-                      <Link key={purity} 
-                            href={`/Map?filter=purity&value=${purity}`} 
-                            className={styles.dropdownItem}>
-                        {purity}
+                    {[
+                      { value: '10', label: '10K Gold' },
+                      { value: '14', label: '14K Gold' },
+                      { value: '18', label: '18K Gold' },
+                      { value: '22', label: '22K Gold' },
+                      { value: '24', label: '24K Pure Gold' },
+                      { value: '', label: 'See All', special: true }
+                    ].map(purity => (
+                      <Link 
+                        key={purity.value} 
+                        href={`/search?filter=goldPurity&value=${purity.value}&showResults=true`} // Add showResults parameter
+                        className={`${styles.dropdownItem} ${purity.special ? styles.seeAllButton : ''}`}
+                      >
+                        {purity.label}
                       </Link>
                     ))}
                   </div>
@@ -110,34 +129,50 @@ const Header: React.FC = () => {
                 onClick={(e) => handleSubmenuClick(e, 'type')}
                 data-submenu="type"
               >
-                By Chain Type
+                By Type
                 <span className={`${styles.submenuArrow} ${activeSubmenu === 'type' ? styles.open : ''}`}>▶</span>
                 
                 {activeSubmenu === 'type' && (
                   <div className={styles.submenuContent}>
                     <div className={styles.twoColumnSubmenu}>
                       <div className={styles.submenuColumn}>
-                        {leftColumnTypes.map(type => (
-                          <Link key={type} 
-                                href={`/Map?filter=chainType&value=${type}`} 
-                                className={styles.dropdownItem}>
-                            {type}
-                          </Link>
-                        ))}
+                        {leftColumnTypes.map(type => {
+                          const isSpecialType = typeof type !== 'string';
+                          const displayName = isSpecialType ? type.name : type;
+                          const linkValue = isSpecialType ? type.value : type.replace(' Chain', '');
+                          
+                          return (
+                            <Link 
+                              key={displayName}
+                              href={`/search?filter=chainStyle&value=${linkValue}&showResults=true`} // Add showResults parameter
+                              className={styles.dropdownItem}
+                            >
+                              {displayName}
+                            </Link>
+                          );
+                        })}
                       </div>
                       <div className={styles.submenuColumn}>
-                        {rightColumnTypes.map(type => (
-                          <Link key={type} 
-                                href={`/Map?filter=chainType&value=${type}`} 
-                                className={styles.dropdownItem}>
-                            {type}
-                          </Link>
-                        ))}
+                        {[
+                          ...rightColumnTypes,
+                          { name: "See All", value: "", special: true } // Moved to end of right column
+                        ].map(type => {
+                          const isSpecialType = typeof type !== 'string';
+                          const displayName = isSpecialType ? type.name : type;
+                          const linkValue = isSpecialType ? type.value : type.replace(' Chain', '');
+                          
+                          return (
+                            <Link 
+                              key={displayName}
+                              href={`/search?filter=chainStyle&value=${linkValue}&showResults=true`} // Add showResults parameter
+                              className={`${styles.dropdownItem} ${isSpecialType && type.special ? styles.seeAllButton : ''}`}
+                            >
+                              {displayName}
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
-                    <Link href="/search" className={`${styles.dropdownItem} ${styles.seeAllButton}`}>
-                      See All Chain Types
-                    </Link>
                   </div>
                 )}
               </div>

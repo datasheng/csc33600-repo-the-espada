@@ -8,125 +8,22 @@ import Link from 'next/link';
 import { motion } from "framer-motion"
 
 // Add this utility function at the top of the file
-const getStoreStatus = (hours: string): { isOpen: boolean; nextChange: string } => {
-  // Get current EST time
-  const now = new Date();
-  const est = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true,
-    weekday: 'short'
-  });
-  
-  const currentDay = now.toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short' });
-  const currentTime = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false });
-  
-  // Parse store hours
-  const hoursRegex = /([a-zA-Z]+)-([a-zA-Z]+):\s*(\d+(?::\d+)?[AP]M)-(\d+(?::\d+)?[AP]M)/g;
-  const daysMap: { [key: string]: number } = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-  let schedule: { start: Date, end: Date }[] = [];
-  
-  let match;
-  while ((match = hoursRegex.exec(hours)) !== null) {
-    const [_, startDay, endDay, startTime, endTime] = match;
-    const startHour = parseInt(startTime.replace(/[APM]/g, ''));
-    const endHour = parseInt(endTime.replace(/[APM]/g, ''));
-    
-    // Create Date objects for start and end times
-    const start = new Date();
-    start.setHours(startTime.includes('PM') ? startHour + 12 : startHour, 0);
-    const end = new Date();
-    end.setHours(endTime.includes('PM') ? endHour + 12 : endHour, 0);
-    
-    schedule.push({ start, end });
-  }
-  
-  // Check if currently open
-  const currentHour = parseInt(currentTime.split(':')[0]);
-  const isOpen = schedule.some(({ start, end }) => 
-    currentHour >= start.getHours() && currentHour < end.getHours()
-  );
-  
-  // Find next opening/closing time
-  let nextChange = '';
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+import { 
+  Store, 
+  fetchStores, 
+  getStoreStatus, 
+  parseStoreHours,
+  CHAIN_TYPES,
+  CHAIN_COLORS,
+  GOLD_PURITIES,
+  getFormattedProductName // Add this import
+} from '../data/stores';
 
-  let nextOpeningDay = today;
-  let nextOpeningTime = '';
+// Remove the local StarRating component and import it
+import { StarRating } from '../components/StarRating';
 
-  // Parse store hours for each day
-  const daysArray = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  
-  // Find the next opening time
-  if (!isOpen) {
-    let daysToCheck = 7; // Check up to a week ahead
-    let currentCheckDay = today;
-    
-    while (daysToCheck > 0) {
-      const checkDayName = currentCheckDay.toLocaleString('en-US', { 
-        timeZone: 'America/New_York', 
-        weekday: 'short' 
-      });
-      
-      // Look for this day's hours in the schedule
-      const dayRegex = new RegExp(`${checkDayName}[^,]*?:(\\s*\\d+(?::\\d+)?[AP]M)`, 'i');
-      const match = hours.match(dayRegex);
-
-      if (match && !hours.includes(`${checkDayName}: Closed`)) {
-        nextOpeningDay = currentCheckDay;
-        nextOpeningTime = match[1].trim();
-        break;
-      }
-
-      // Move to next day
-      currentCheckDay = new Date(currentCheckDay);
-      currentCheckDay.setDate(currentCheckDay.getDate() + 1);
-      daysToCheck--;
-    }
-
-    if (nextOpeningTime) {
-      const dayName = nextOpeningDay.toLocaleString('en-US', { 
-        timeZone: 'America/New_York', 
-        weekday: 'short' 
-      });
-      nextChange = `Opens ${nextOpeningTime} ${dayName}`;
-    } else {
-      nextChange = 'Temporarily closed';
-    }
-  } else {
-    const closing = schedule.find(({ end }) => currentHour < end.getHours());
-    if (closing) {
-      nextChange = `Closes at ${closing.end.toLocaleString('en-US', { 
-        hour: 'numeric', 
-        minute: 'numeric', 
-        hour12: true 
-      })}`;
-    }
-  }
-  
-  return { isOpen, nextChange };
-};
-
-interface Store {
-  id: string;
-  name: string;
-  address: string;
-  hours: string;
-  lat: number;
-  lng: number;
-  price: number;  // Changed from pricePerGram
-  purity: number;
-  style: string;
-  thickness: string;
-  length: string;
-  rating: number;      // Add rating (0-5)
-  numReviews: number;  // Add number of reviews
-  color: string;  // Add this property
-}
+// Add this near the top of the MapComponent
+import { useSearchParams } from 'next/navigation';
 
 interface CustomMarker extends Marker {
   storeId?: string;
@@ -134,44 +31,6 @@ interface CustomMarker extends Marker {
 
 const isValidIcon = (icon: Icon | null): icon is Icon => {
   return icon !== null;
-};
-
-const StarRating: React.FC<{ rating: number; numReviews: number }> = ({ rating, numReviews }) => {
-  return (
-    <div className={styles.starRating}>
-      <span className={styles.ratingNumber}>{rating.toFixed(1)}</span>
-      <div className={styles.stars}>
-        {[...Array(5)].map((_, index) => {
-          const fillPercentage = Math.min(Math.max((rating - index) * 100, 0), 100);
-          return (
-            <span 
-              key={index} 
-              className={styles.star}
-              style={{
-                position: 'relative',
-                display: 'inline-block'
-              }}
-            >
-              <span className={styles.starBackground}>★</span>
-              <span 
-                className={styles.starFill}
-                style={{
-                  width: `${fillPercentage}%`,
-                  overflow: 'hidden',
-                  position: 'absolute',
-                  left: 0,
-                  top: 0
-                }}
-              >
-                ★
-              </span>
-            </span>
-          );
-        })}
-      </div>
-      <span className={styles.reviewCount}>({numReviews})</span>
-    </div>
-  );
 };
 
 // Add this new component
@@ -194,8 +53,12 @@ import Header from '../components/Header';
 // ...rest of your imports
 
 const MapComponent: React.FC = () => {
+  // Add this near the top with other state declarations
+  const searchParams = useSearchParams();
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [stores, setStores] = useState<Store[]>([]); // Add this line
   const [filters, setFilters] = useState({
     priceSort: "",
     goldPurity: "",
@@ -348,57 +211,14 @@ const MapComponent: React.FC = () => {
     }
   };
 
-  // Sample store data with more details
-  const stores: Store[] = [
-    {
-      id: '1',
-      name: "Gold & Diamond District",
-      address: "47 W 47th St, New York, NY 10036",
-      hours: "Mon-Sat: 10AM-6PM, Sun: Closed",
-      lat: 40.7128,
-      lng: -74.006,
-      price: 1299.99,  // Changed from pricePerGram
-      purity: 18,
-      style: "Cable",
-      thickness: "2 mm",  // Added space
-      length: "20 in",     // Added space
-      rating: 4.5,      // Add rating (0-5)
-      numReviews: 128,  // Add number of reviews
-      color: "Yellow",
-    },
-    {
-      id: '2',
-      name: "Empire Gold Exchange",
-      address: "152 W 34th St, New York, NY 10001",
-      hours: "Mon-Fri: 9AM-7PM, Sat: 10AM-6PM, Sun: 11AM-5PM",
-      lat: 40.7505,
-      lng: -73.9934,
-      price: 2499.99,  // Changed from pricePerGram
-      purity: 14,
-      style: "Miami Cuban",
-      thickness: "4 mm",  // Added space
-      length: "24 in",     // Added space
-      rating: 4.2,      // Add rating (0-5)
-      numReviews: 86,  // Add number of reviews
-      color: "Rose",
-    },
-    {
-      id: '3',
-      name: "Royal Gold & Jewelry",
-      address: "28 E 23rd St, New York, NY 10010",
-      hours: "Mon-Sat: 11AM-8PM, Sun: Closed", // Changed from 8PM to 11PM
-      lat: 40.7410,
-      lng: -73.9867,
-      price: 1899.99,
-      purity: 22,
-      style: "Franco",
-      thickness: "3 mm",
-      length: "18 in",
-      rating: 4.8,
-      numReviews: 234,
-      color: "Two-Color",
-    }
-  ];
+  // Add useEffect to fetch stores
+  useEffect(() => {
+    const loadStores = async () => {
+      const storeData = await fetchStores();
+      setStores(storeData);
+    };
+    loadStores();
+  }, []);
 
   // Initialize map only once
   useEffect(() => {
@@ -562,34 +382,17 @@ const MapComponent: React.FC = () => {
                 m.setIcon(goldIcon);
               }
             });
-
-            const currentClicks = clickCount[store.id] || 0;
-            const newClickCount = currentClicks + 1;
             
-            setClickCount(prev => ({
-              ...prev,
-              [store.id]: newClickCount
-            }));
-
-            setSelectedStore(store.id);
-            
-            // Set this marker as selected
+            // Update selected marker after reset
             if (isValidIcon(selectedGoldIcon)) {
               marker.setIcon(selectedGoldIcon);
             }
+            
             bounceMarker(marker);
-
-            // Only zoom on double click for markers
-            if (newClickCount === 2) {
-              map.setView([store.lat, store.lng], 15);
-              setClickCount(prev => ({
-                ...prev,
-                [store.id]: 0
-              }));
-            }
-
+            setSelectedStore(store.id);
             setSelectedStoreData(store);
             setShowExtendedInfo(true);
+            map.setView([store.lat, store.lng], 15);
           });
 
           marker.storeId = store.id;
@@ -606,6 +409,117 @@ const MapComponent: React.FC = () => {
 
     updateMarkers();
   }, [currentFilters, map, goldIcon, selectedGoldIcon, priceSort]);
+
+  // First, create a stable reference for the initialization function
+  const initView = useCallback(async (storeId: string | null) => {
+    if (!storeId || !stores.length || !map || !markers.length) return;
+  
+    const store = stores.find(s => s.id === storeId);
+    if (!store) return;
+  
+    // Reset filters
+    setCurrentFilters({
+      goldPurity: "",
+      chainStyle: "",
+      thickness: "",
+      length: "",
+      color: "",
+    });
+  
+    // Reset all markers first
+    markers.forEach(m => {
+      if (isValidIcon(goldIcon)) {
+        m.setIcon(goldIcon);
+      }
+    });
+  
+    // Find and update target marker
+    const targetMarker = markers.find(m => m.storeId === storeId);
+    if (targetMarker && isValidIcon(selectedGoldIcon)) {
+      targetMarker.setIcon(selectedGoldIcon);
+      bounceMarker(targetMarker);
+    }
+  
+    // Update view and state
+    map.setView([store.lat, store.lng], 15);
+    setSelectedStore(storeId);
+    setSelectedStoreData(store);
+    setShowExtendedInfo(true);
+    // Remove setShowResults(true) - we don't want to show the results list
+  }, [stores, map, markers, goldIcon, selectedGoldIcon]);
+  
+  // Then update the useEffect that handles URL params
+  useEffect(() => {
+  const storeId = searchParams.get('storeId');
+
+  if (!storeId || selectedStore === storeId) return;
+
+  if (stores.length > 0 && map && markers.length > 0) {
+    const store = stores.find(s => s.id === storeId);
+    if (!store) return;
+
+    const updateMarkers = () => {
+      markers.forEach(m => {
+        if (isValidIcon(goldIcon)) {
+          m.setIcon(goldIcon);
+        }
+      });
+
+      const targetMarker = markers.find(m => m.storeId === storeId);
+      if (targetMarker && isValidIcon(selectedGoldIcon)) {
+        targetMarker.setIcon(selectedGoldIcon);
+        bounceMarker(targetMarker);
+      }
+    };
+
+    updateMarkers();
+    map.setView([store.lat, store.lng], 15);
+    setSelectedStore(storeId);
+    setSelectedStoreData(store);
+    setShowExtendedInfo(true);
+  }
+}, [searchParams, stores, map, markers, goldIcon, selectedGoldIcon, selectedStore]);
+ // Remove selectedStore from deps
+
+// Update the URL params useEffect
+useEffect(() => {
+  const storeId = searchParams.get('storeId');
+  
+  // Only handle URL param on initial load
+  if (!storeId || window.location.href.indexOf('storeId') === -1) return;
+  
+  const handleInitialStore = async () => {
+    if (stores.length > 0 && map && markers.length > 0) {
+      const store = stores.find(s => s.id === storeId);
+      if (!store) return;
+
+      // Reset markers
+      markers.forEach(m => {
+        if (isValidIcon(goldIcon)) {
+          m.setIcon(goldIcon);
+        }
+      });
+
+      // Update target marker
+      const targetMarker = markers.find(m => m.storeId === storeId);
+      if (targetMarker && isValidIcon(selectedGoldIcon)) {
+        targetMarker.setIcon(selectedGoldIcon);
+        bounceMarker(targetMarker);
+      }
+
+      // Set initial view
+      map.setView([store.lat, store.lng], 15);
+      setSelectedStore(storeId);
+      setSelectedStoreData(store);
+      setShowExtendedInfo(true);
+
+      // Clear URL parameter after handling
+      window.history.replaceState({}, '', '/Map');
+    }
+  };
+
+  handleInitialStore();
+}, [searchParams, stores, map, markers, goldIcon, selectedGoldIcon]); // Remove selectedStore from deps
 
   return (
     <>
@@ -685,7 +599,6 @@ const MapComponent: React.FC = () => {
                   <option value="FlatCurb">Flat Curb Chain</option>
                   <option value="Franco">Franco Chain</option>
                   <option value="Herringbone">Herringbone Chain</option>
-                  <option value="Link">Link Chain</option>
                   <option value="Mariner">Mariner Chain</option>
                   <option value="MiamiCuban">Miami Cuban Chain</option>
                   <option value="MoonCut">Moon Cut Chain</option>
@@ -791,8 +704,12 @@ const MapComponent: React.FC = () => {
                 className={`${styles.storeCard} ${selectedStore === store.id ? styles.selected : ''}`}
                 onClick={() => handleStoreClick(store.id)}
               >
+                {/* Updated product name styling */}
+                <h3 className="text-2xl text-[#FFD700] font-bold mb-2 tracking-tight">
+                  {getFormattedProductName(store)}
+                </h3>
                 <h4>{store.name}</h4>
-                <StarRating rating={store.rating} numReviews={store.numReviews} />
+                <StarRating rating={store.rating} numReviews={store.numReviews} size="small" />
                 <p>{store.address}</p>
                 <div className={styles.storeStatus}>
                   <span className={`${styles.statusDot} ${getStoreStatus(store.hours).isOpen ? styles.open : styles.closed}`} />
@@ -805,13 +722,7 @@ const MapComponent: React.FC = () => {
                   </span>
                 </div>
                 <p className={styles.price}>${store.price.toLocaleString()}</p>
-                <div className={styles.chainDetails}>
-                  <span>{store.purity}K</span>
-                  <span>{store.color}</span>
-                  <span>{store.style}</span>
-                  <span>{store.thickness}</span>
-                  <span>{store.length}</span>
-                </div>
+                {/* Remove the chainDetails div */}
               </div>
             ))}
           </div>
@@ -825,8 +736,14 @@ const MapComponent: React.FC = () => {
             >
               ×
             </button>
-            <h2>{selectedStoreData.name}</h2>
-            <StarRating rating={selectedStoreData.rating} numReviews={selectedStoreData.numReviews} />
+            {/* Updated product name styling */}
+            <h2 className="text-4xl text-[#FFD700] font-bold mb-4 tracking-tight">
+              {getFormattedProductName(selectedStoreData)}
+            </h2>
+            <h3 className="text-2xl text-white mb-4 opacity-90">
+              {selectedStoreData.name}
+            </h3>
+            <StarRating rating={selectedStoreData.rating} numReviews={selectedStoreData.numReviews} size="large" />
             <p className={styles.address}>{selectedStoreData.address}</p>
             
             <div className={styles.extendedInfoStatus}>
@@ -863,27 +780,24 @@ const MapComponent: React.FC = () => {
               <div className={styles.price}>${selectedStoreData.price.toLocaleString()}</div>
             </div>
 
-            <div className={styles.details}>
-              <div className={styles.detail}>
-                <label>Purity</label>
-                <span>{selectedStoreData.purity}K Gold</span>
-              </div>
-              <div className={styles.detail}>
-                <label>Color</label>
-                <span>{selectedStoreData.color}</span>
-              </div>
-              <div className={styles.detail}>
-                <label>Style</label>
-                <span>{selectedStoreData.style}</span>
-              </div>
-              <div className={styles.detail}>
-                <label>Thickness</label>
-                <span>{selectedStoreData.thickness}</span>
-              </div>
-              <div className={styles.detail}>
-                <label>Length</label>
-                <span>{selectedStoreData.length}</span>
-              </div>
+            {/* Remove the details grid with purity, color, style, etc. */}
+
+            {/* Add action buttons container */}
+            <div className={styles.actionButtons}>
+              <a 
+                href={`https://maps.google.com/?q=${selectedStoreData.lat},${selectedStoreData.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.directionsButton}
+              >
+                Get Directions On Google Maps
+              </a>
+              <Link
+                href={`/products/${selectedStoreData.id}`}
+                className={styles.detailsButton}
+              >
+                View More Details
+              </Link>
             </div>
           </div>
         )}
