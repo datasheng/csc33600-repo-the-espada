@@ -165,9 +165,7 @@
   color: #FFD700;
   font-size: 1.35rem;
   font-weight: bold;
-  margin-bottom: 0.5rem;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
+  margin-bottom: 12px;
 }
 
 .storeCard h4 {
@@ -271,17 +269,33 @@
 }
 
 .priceSortSelect {
-  background: rgba(255, 215, 0, 0.1);
+  /* Base styles */
+  appearance: none;
+  background-color: transparent;
+  border: 1px solid #FFD700;
   color: #FFD700;
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  border-radius: 4px;
-  padding: 4px 6px;
-  cursor: pointer;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
   font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* Custom arrow styling */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23FFD700' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
 }
 
 .priceSortSelect:hover {
-  background: rgba(255, 215, 0, 0.2);
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.priceSortSelect option {
+  background-color: black;
+  color: #FFD700;
+  padding: 0.5rem;
 }
 
 .extendedInfo {
@@ -344,8 +358,8 @@
   background: rgba(255, 215, 0, 0.1);
   padding: 16px;
   border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center; /* Add this line */
+  margin-bottom: 12px;  /* Reduced from 20px to 12px */
+  text-align: center;
 }
 
 .extendedInfo .price {
@@ -612,7 +626,6 @@
 .actionButtons {
   display: flex;
   gap: 12px;
-  margin-top: 20px;
 }
 
 .directionsButton,
@@ -646,4 +659,85 @@
 
 .detailsButton:hover {
   background-color: #e6b800;
+}
+
+.productsSection {
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}
+
+.productsSection h4 {
+  color: #FFD700;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.productRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.productInfo {
+  flex: 1;
+}
+
+.productName {
+  color: #FFD700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.productPrice {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.viewProductButton {
+  background: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+}
+
+.viewProductButton:hover {
+  background: #FFD700;
+  color: black;
+}
+
+.productCard {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.productCard:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.productCard.selected {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid #FFD700;
+}
+
+.storeName {
+  color: white;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  font-style: italic;
 }

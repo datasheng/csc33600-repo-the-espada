@@ -9,21 +9,26 @@ import { motion } from "framer-motion"
 
 // Add this utility function at the top of the file
 import { 
-  Store, 
-  fetchStores, 
+  fetchStores,
+  fetchProducts,
   getStoreStatus, 
-  parseStoreHours,
   CHAIN_TYPES,
   CHAIN_COLORS,
   GOLD_PURITIES,
-  getFormattedProductName // Add this import
+  getFormattedProductName
 } from '../data/stores';
+
+// Change the import to use type-only import
+import type { Store, Product, StoreHours, StoreStatus as IStoreStatus } from '../data/stores';
 
 // Remove the local StarRating component and import it
 import { StarRating } from '../components/StarRating';
 
 // Add this near the top of the MapComponent
 import { useSearchParams } from 'next/navigation';
+
+// Add this to your imports at the top
+import { useRouter } from 'next/navigation';
 
 interface CustomMarker extends Marker {
   storeId?: string;
@@ -33,8 +38,8 @@ const isValidIcon = (icon: Icon | null): icon is Icon => {
   return icon !== null;
 };
 
-// Add this new component
-const StoreStatus: React.FC<{ hours: string }> = ({ hours }) => {
+// Rename the component to avoid conflict
+const StoreStatusDisplay: React.FC<{ hours: StoreHours[] }> = ({ hours }) => {
   const { isOpen, nextChange } = getStoreStatus(hours);
   
   return (
@@ -53,7 +58,7 @@ import Header from '../components/Header';
 // ...rest of your imports
 
 const MapComponent: React.FC = () => {
-  // Add this near the top with other state declarations
+  const router = useRouter();
   const searchParams = useSearchParams();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -102,30 +107,88 @@ const MapComponent: React.FC = () => {
   const [selectedStoreData, setSelectedStoreData] = useState<Store | null>(null);
 
   // Add new state for hours dropdown
-  const [showHours, setShowHours] = useState(false);
+  const [showHours, setShowHours] = useState(true);
 
-  // Initialize icons when the component mounts
+  // Add new state for products
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Add new state for selected product ID
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  // Add useEffect for map initialization to prevent SSR issues
+  useEffect(() => {
+    let isMounted = true;
+  
+    const initializeMap = async () => {
+      try {
+        if (typeof window === 'undefined') return; // Prevent SSR execution
+        
+        const L = (await import('leaflet')).default;
+        await import('leaflet/dist/leaflet.css');
+  
+        if (!isMounted) return;
+  
+        if (!map) {
+          const newMap = L.map("map", { zoomControl: false }).setView([40.7128, -74.006], 13);
+          
+          L.control.zoom({ 
+            position: 'bottomright',
+            zoomInText: '+',
+            zoomOutText: '-'
+          }).addTo(newMap);
+  
+          L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png", {
+            attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a>'
+          }).addTo(newMap);
+  
+          setMap(newMap);
+        }
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
+    };
+  
+    initializeMap();
+  
+    return () => {
+      isMounted = false;
+      if (map) {
+        map.remove();
+      }
+    };
+  }, []);
+
+  // Update the icon initialization useEffect
   useEffect(() => {
     const initIcons = async () => {
-      const L = (await import('leaflet')).default;
+      if (typeof window === 'undefined') return; // Prevent SSR execution
       
-      const normalIcon = L.icon({
-        iconUrl: "/map_images/black-marker.png", // Update with black marker image
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-      });
-
-      const selectedIcon = L.icon({
-        iconUrl: "/map_images/gold-marker.png", // Keep the gold marker for selected state
-        iconSize: [35, 57],
-        iconAnchor: [17, 57],
-        className: styles.selectedMarker
-      });
-
-      setGoldIcon(normalIcon);
-      setSelectedGoldIcon(selectedIcon);
+      try {
+        const L = (await import('leaflet')).default;
+        
+        const normalIcon = L.icon({
+          iconUrl: "/map_images/black-marker.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+        });
+  
+        const selectedIcon = L.icon({
+          iconUrl: "/map_images/gold-marker.png",
+          iconSize: [35, 57], // Larger size for selected state
+          iconAnchor: [17, 57],
+          popupAnchor: [1, -34],
+        });
+  
+        setGoldIcon(normalIcon);
+        setSelectedGoldIcon(selectedIcon);
+      } catch (error) {
+        console.error('Error initializing icons:', error);
+      }
     };
-
+  
     initIcons();
   }, []);
 
@@ -137,18 +200,28 @@ const MapComponent: React.FC = () => {
     // This updates the visual state of filters but doesn't trigger filtering
   };
 
+  // Update the handlePriceSortChange function
   const handlePriceSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
     setPriceSort(value);
-    
-    // Immediately sort the current filtered stores
-    let sortedStores = [...filteredStores];
-    if (value === "lowToHigh") {
-      sortedStores.sort((a, b) => a.price - b.price);
-    } else if (value === "highToLow") {
-      sortedStores.sort((a, b) => b.price - a.price);
+  
+    // First, sort all filtered products
+    let sortedProducts = [...filteredProducts];
+    if (value === "") {
+      // Reset to original order
+      sortedProducts = [...products].filter(p => 
+        filteredProducts.some(fp => fp.productId === p.productId)
+      );
+    } else {
+      sortedProducts.sort((a, b) => {
+        if (value === "lowToHigh") {
+          return a.price - b.price;
+        } else {
+          return b.price - a.price;
+        }
+      });
     }
-    setFilteredStores(sortedStores);
+    setFilteredProducts(sortedProducts);
   };
 
   const clearFilters = () => {
@@ -171,31 +244,38 @@ const MapComponent: React.FC = () => {
     }
   };
 
-  const handleStoreClick = (storeId: string) => {
-    // First reset ALL markers to default state
+  // Update handleStoreClick to include productId
+  const handleStoreClick = async (storeId: string, productId: string) => {
+    const store = stores.find(s => s.id === storeId);
+    if (!store || !map || !isValidIcon(selectedGoldIcon)) {
+      console.error('Missing required data:', { store, map, selectedGoldIcon });
+      return;
+    }
+  
+    map.setView([store.lat, store.lng], 15);
+  
+    // Reset all markers
     markers.forEach(marker => {
       if (isValidIcon(goldIcon)) {
         marker.setIcon(goldIcon);
+        marker.setZIndexOffset(0);
       }
     });
-
-    setSelectedStore(storeId);
-    const store = stores.find(s => s.id === storeId);
-    
-    if (store && map && isValidIcon(selectedGoldIcon)) {
-      // Then set only the clicked marker to selected state
-      const selectedMarker = markers.find(marker => marker.storeId === storeId);
-      if (selectedMarker) {
-        selectedMarker.setIcon(selectedGoldIcon);
-        bounceMarker(selectedMarker);
-        // Always zoom when clicking from results list, no double click needed
-        map.setView([store.lat, store.lng], 15);
-      }
-      
-      // Add these lines to show extended info
-      setSelectedStoreData(store);
-      setShowExtendedInfo(true);
+  
+    // Update selected marker
+    const selectedMarker = markers.find(marker => marker.storeId === storeId);
+    if (selectedMarker) {
+      selectedMarker.setIcon(selectedGoldIcon);
+      selectedMarker.setZIndexOffset(1000);
+      bounceMarker(selectedMarker);
     }
+  
+    // Update states
+    setSelectedStore(storeId);
+    setSelectedStoreData(store);
+    setSelectedProduct(products.find(p => p.productId === productId) || null);
+    setSelectedProductId(productId);
+    setShowExtendedInfo(true);
   };
 
   const handleApplyFilters = () => {
@@ -211,57 +291,18 @@ const MapComponent: React.FC = () => {
     }
   };
 
-  // Add useEffect to fetch stores
+  // Add useEffect to fetch stores and products
   useEffect(() => {
-    const loadStores = async () => {
-      const storeData = await fetchStores();
+    const loadData = async () => {
+      const [storeData, productData] = await Promise.all([
+        fetchStores(),
+        fetchProducts()
+      ]);
       setStores(storeData);
+      setProducts(productData);
     };
-    loadStores();
+    loadData();
   }, []);
-
-  // Initialize map only once
-  useEffect(() => {
-    let isMounted = true;
-
-    const initializeMap = async () => {
-      try {
-        const L = (await import('leaflet')).default;
-        await import('leaflet/dist/leaflet.css');
-
-        if (!isMounted) return;
-
-        if (!map) {
-          const newMap = L.map("map", { zoomControl: false }).setView([40.7128, -74.006], 13);
-          
-          // Move zoom control to bottom right
-          L.control.zoom({ 
-            position: 'bottomright',
-            zoomInText: '+',
-            zoomOutText: '-'
-          }).addTo(newMap);
-
-          L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png", {
-            attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a>'
-          }).addTo(newMap);
-
-          setMap(newMap);
-        }
-      } catch (error) {
-        console.error('Error initializing map:', error);
-      }
-    };
-
-    initializeMap();
-
-    return () => {
-      isMounted = false;
-      if (map) {
-        map.remove();
-        setMap(null);
-      }
-    };
-  }, []); // Empty dependency array - only run once
 
   // Add this function at the component level
   const bounceMarker = (marker: CustomMarker) => {
@@ -305,7 +346,7 @@ const MapComponent: React.FC = () => {
   
     // Match patterns like "Mon-Sat: 10AM-6PM" or "Sun: Closed"
     const rangeRegex = /([a-zA-Z]{3})-([a-zA-Z]{3}):\s*((?:\d+(?::\d+)?[AP]M-\d+(?::\d+)?[AP]M)|Closed)/g;
-    const singleRegex = /([a-zA-Z]{3}):\s*((?:\d+(?::\d+)?[AP]M-\d+(?::\d+)?[AP]M)|Closed)/g;
+    const singleRegex = /([a-zA-Z]{3}):\s*((?:\d+(?::\d+)?[AP]M-\d+(?::d+)?[AP]M)|Closed)/g;
   
     let match;
   
@@ -351,53 +392,45 @@ const MapComponent: React.FC = () => {
 
         // Clear existing markers
         markers.forEach(marker => marker.remove());
-        setMarkers([]);
 
-        let filtered = stores.filter(store => {
-          if (currentFilters.goldPurity && store.purity !== parseInt(currentFilters.goldPurity)) return false;
-          if (currentFilters.chainStyle && store.style !== currentFilters.chainStyle) return false;
-          if (currentFilters.thickness && store.thickness !== currentFilters.thickness) return false;
-          if (currentFilters.length && store.length !== currentFilters.length) return false;
-          if (currentFilters.color && store.color !== currentFilters.color) return false;  // Add this
+        // Filter products first
+        const filtered = products.filter(product => {
+          if (currentFilters.goldPurity && product.purity !== parseInt(currentFilters.goldPurity)) return false;
+          if (currentFilters.chainStyle && product.style !== currentFilters.chainStyle) return false;
+          if (currentFilters.thickness && product.thickness !== currentFilters.thickness) return false;
+          if (currentFilters.length && product.length !== currentFilters.length) return false;
+          if (currentFilters.color && product.color !== currentFilters.color) return false;
           return true;
         });
 
-        // Apply price sorting if set
-        if (priceSort === "lowToHigh") {
-          filtered.sort((a, b) => a.price - b.price);
-        } else if (priceSort === "highToLow") {
-          filtered.sort((a, b) => b.price - a.price);
-        }
+        setFilteredProducts(filtered);
 
-        setFilteredStores(filtered);
+        // Get unique store IDs from filtered products
+        const storeIds = [...new Set(filtered.map(p => p.storeId))];
+        const filteredStores = stores.filter(s => storeIds.includes(s.id));
+        setFilteredStores(filteredStores);
 
-        // Inside updateMarkers function, update the marker click handler
-        const newMarkers = filtered.map(store => {
-          const marker = L.marker([store.lat, store.lng], { icon: goldIcon }) as CustomMarker;
+        // Create markers for filtered stores with proper icon selection
+        const newMarkers = filteredStores.map(store => {
+          const marker = L.marker([store.lat, store.lng], { 
+            icon: store.id === selectedStore ? selectedGoldIcon : goldIcon 
+          }) as CustomMarker;
           
-          marker.on('click', () => {
-            // Reset ALL markers to default icon first
-            newMarkers.forEach(m => {
-              if (isValidIcon(goldIcon)) {
-                m.setIcon(goldIcon);
-              }
-            });
-            
-            // Update selected marker after reset
-            if (isValidIcon(selectedGoldIcon)) {
-              marker.setIcon(selectedGoldIcon);
-            }
-            
-            bounceMarker(marker);
-            setSelectedStore(store.id);
-            setSelectedStoreData(store);
-            setShowExtendedInfo(true);
-            map.setView([store.lat, store.lng], 15);
-          });
-
           marker.storeId = store.id;
+          
+          if (store.id === selectedStore) {
+            marker.setZIndexOffset(1000);
+          }
+          
+          // Update marker click handler to find first product for the store
+          marker.on('click', () => {
+            const firstProduct = products.find(p => p.storeId === store.id);
+            if (firstProduct) {
+              handleStoreClick(store.id, firstProduct.productId);
+            }
+          });
+          
           marker.addTo(map);
-
           return marker;
         });
 
@@ -408,7 +441,7 @@ const MapComponent: React.FC = () => {
     };
 
     updateMarkers();
-  }, [currentFilters, map, goldIcon, selectedGoldIcon, priceSort]);
+  }, [currentFilters, map, goldIcon, selectedGoldIcon, priceSort, products, stores, selectedStore, selectedProductId]); // Add selectedStore to deps
 
   // First, create a stable reference for the initialization function
   const initView = useCallback(async (storeId: string | null) => {
@@ -448,78 +481,52 @@ const MapComponent: React.FC = () => {
     // Remove setShowResults(true) - we don't want to show the results list
   }, [stores, map, markers, goldIcon, selectedGoldIcon]);
   
-  // Then update the useEffect that handles URL params
+  // Remove the duplicate URL parameter handlers and combine into one
   useEffect(() => {
-  const storeId = searchParams.get('storeId');
-
-  if (!storeId || selectedStore === storeId) return;
-
-  if (stores.length > 0 && map && markers.length > 0) {
-    const store = stores.find(s => s.id === storeId);
-    if (!store) return;
-
-    const updateMarkers = () => {
-      markers.forEach(m => {
-        if (isValidIcon(goldIcon)) {
-          m.setIcon(goldIcon);
+    const storeId = searchParams.get('storeId');
+    
+    // Skip if no storeId or if it's already selected
+    if (!storeId || selectedStore === storeId) return;
+    
+    const handleStoreSelection = async () => {
+      if (stores.length > 0 && map && markers.length > 0) {
+        const store = stores.find(s => s.id === storeId);
+        if (!store) return;
+  
+        // Get store products
+        const storeProducts = products.filter(p => p.storeId === storeId);
+        const firstMatchingProduct = storeProducts[0] || null;
+  
+        // Reset all markers first
+        markers.forEach(m => {
+          if (isValidIcon(goldIcon)) {
+            m.setIcon(goldIcon);
+            m.setZIndexOffset(0);
+          }
+        });
+  
+        // Update selected marker
+        const targetMarker = markers.find(m => m.storeId === storeId);
+        if (targetMarker && isValidIcon(selectedGoldIcon)) {
+          targetMarker.setIcon(selectedGoldIcon);
+          targetMarker.setZIndexOffset(1000); // Bring selected marker to front
+          bounceMarker(targetMarker);
         }
-      });
-
-      const targetMarker = markers.find(m => m.storeId === storeId);
-      if (targetMarker && isValidIcon(selectedGoldIcon)) {
-        targetMarker.setIcon(selectedGoldIcon);
-        bounceMarker(targetMarker);
+  
+        // Set view and update state
+        map.setView([store.lat, store.lng], 15);
+        setSelectedStore(storeId);
+        setSelectedStoreData(store);
+        setSelectedProduct(firstMatchingProduct);
+        setShowExtendedInfo(true);
+  
+        // Clear URL parameter
+        window.history.replaceState({}, '', '/Map');
       }
     };
-
-    updateMarkers();
-    map.setView([store.lat, store.lng], 15);
-    setSelectedStore(storeId);
-    setSelectedStoreData(store);
-    setShowExtendedInfo(true);
-  }
-}, [searchParams, stores, map, markers, goldIcon, selectedGoldIcon, selectedStore]);
- // Remove selectedStore from deps
-
-// Update the URL params useEffect
-useEffect(() => {
-  const storeId = searchParams.get('storeId');
   
-  // Only handle URL param on initial load
-  if (!storeId || window.location.href.indexOf('storeId') === -1) return;
-  
-  const handleInitialStore = async () => {
-    if (stores.length > 0 && map && markers.length > 0) {
-      const store = stores.find(s => s.id === storeId);
-      if (!store) return;
-
-      // Reset markers
-      markers.forEach(m => {
-        if (isValidIcon(goldIcon)) {
-          m.setIcon(goldIcon);
-        }
-      });
-
-      // Update target marker
-      const targetMarker = markers.find(m => m.storeId === storeId);
-      if (targetMarker && isValidIcon(selectedGoldIcon)) {
-        targetMarker.setIcon(selectedGoldIcon);
-        bounceMarker(targetMarker);
-      }
-
-      // Set initial view
-      map.setView([store.lat, store.lng], 15);
-      setSelectedStore(storeId);
-      setSelectedStoreData(store);
-      setShowExtendedInfo(true);
-
-      // Clear URL parameter after handling
-      window.history.replaceState({}, '', '/Map');
-    }
-  };
-
-  handleInitialStore();
-}, [searchParams, stores, map, markers, goldIcon, selectedGoldIcon]); // Remove selectedStore from deps
+    handleStoreSelection();
+  }, [searchParams, stores, map, markers, goldIcon, selectedGoldIcon, products]);
 
   return (
     <>
@@ -679,7 +686,7 @@ useEffect(() => {
         {showResults && (
           <div className={styles.resultsList}>
             <div className={styles.resultsHeader}>
-              <h3>Results ({filteredStores.length})</h3>
+              <h3>Results ({filteredProducts.length})</h3>
               <div className={styles.resultsControls}>
                 <select
                   className={styles.priceSortSelect}
@@ -690,60 +697,78 @@ useEffect(() => {
                   <option value="lowToHigh">Lowest to Highest</option>
                   <option value="highToLow">Highest to Lowest</option>
                 </select>
-                <button 
-                  onClick={handleCloseResults}
-                  className={styles.closeButton}
-                >
-                  ×
-                </button>
+                <button onClick={handleCloseResults} className={styles.closeButton}>×</button>
               </div>
             </div>
-            {filteredStores.map(store => (
-              <div
-                key={store.id}
-                className={`${styles.storeCard} ${selectedStore === store.id ? styles.selected : ''}`}
-                onClick={() => handleStoreClick(store.id)}
-              >
-                {/* Updated product name styling */}
-                <h3 className="text-2xl text-[#FFD700] font-bold mb-2 tracking-tight">
-                  {getFormattedProductName(store)}
-                </h3>
-                <h4>{store.name}</h4>
-                <StarRating rating={store.rating} numReviews={store.numReviews} size="small" />
-                <p>{store.address}</p>
-                <div className={styles.storeStatus}>
-                  <span className={`${styles.statusDot} ${getStoreStatus(store.hours).isOpen ? styles.open : styles.closed}`} />
-                  <span className={styles.statusText}>
-                    {getStoreStatus(store.hours).isOpen ? 'Open' : 'Closed'}
-                  </span>
-                  <span className={styles.statusBullet}>•</span>
-                  <span className={styles.nextChange}>
-                    {getStoreStatus(store.hours).nextChange}
-                  </span>
-                </div>
-                <p className={styles.price}>${store.price.toLocaleString()}</p>
-                {/* Remove the chainDetails div */}
-              </div>
-            ))}
+            
+            {/* Show all products in a flat list, sorted by price */}
+            {filteredProducts
+              .sort((a, b) => {
+                if (priceSort === "lowToHigh") {
+                  return a.price - b.price;
+                } else if (priceSort === "highToLow") {
+                  return b.price - a.price;
+                }
+                return 0;
+              })
+              .map((product) => {
+                const store = stores.find(s => s.id === product.storeId);
+                if (!store) return null;
+                
+                return (
+                  <div 
+                    key={product.productId} 
+                    className={`${styles.productCard} ${selectedProductId === product.productId ? styles.selected : ''}`}
+                    onClick={() => handleStoreClick(store.id, product.productId)}
+                  >
+                    <div className={styles.productInfo}>
+                      <p className={styles.productName}>
+                        {getFormattedProductName(product)}
+                      </p>
+                      <p className={styles.storeName}>
+                        {store.name}
+                      </p>
+                      <p className={styles.productPrice}>
+                        ${product.price.toLocaleString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/products/${product.productId}`);
+                      }}
+                      className={styles.viewProductButton}
+                    >
+                      View Product
+                    </button>
+                  </div>
+                );
+              })}
           </div>
         )}
 
-        {showExtendedInfo && selectedStoreData && (
+        {showExtendedInfo && selectedStoreData && selectedProduct && (
           <div className={styles.extendedInfo}>
             <button 
               className={styles.closeExtendedInfo}
-              onClick={() => setShowExtendedInfo(false)}
+              onClick={() => {
+                setShowExtendedInfo(false);
+                setSelectedProduct(null);
+              }}
             >
               ×
             </button>
-            {/* Updated product name styling */}
-            <h2 className="text-4xl text-[#FFD700] font-bold mb-4 tracking-tight">
-              {getFormattedProductName(selectedStoreData)}
-            </h2>
+            
             <h3 className="text-2xl text-white mb-4 opacity-90">
               {selectedStoreData.name}
             </h3>
-            <StarRating rating={selectedStoreData.rating} numReviews={selectedStoreData.numReviews} size="large" />
+            
+            <StarRating 
+              rating={selectedStoreData.rating} 
+              numReviews={selectedStoreData.numReviews} 
+              size="large" 
+            />
+            
             <p className={styles.address}>{selectedStoreData.address}</p>
             
             <div className={styles.extendedInfoStatus}>
@@ -766,23 +791,21 @@ useEffect(() => {
               
               {showHours && (
                 <div className={styles.hoursDropdown}>
-                  {Object.entries(parseStoreHours(selectedStoreData.hours)).map(([day, hours]) => (
-                    <div key={day} className={styles.hourRow}>
-                      <span className={styles.dayName}>{day}</span>
-                      <span>{hours}</span>
+                  {selectedStoreData.hours.map((hourData) => (
+                    <div key={hourData.day} className={styles.hourRow}>
+                      <span className={styles.dayName}>{hourData.day}</span>
+                      <span>
+                        {hourData.isClosed 
+                          ? 'Closed'
+                          : `${hourData.open} - ${hourData.close}`}
+                      </span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            
-            <div className={styles.priceSection}>
-              <div className={styles.price}>${selectedStoreData.price.toLocaleString()}</div>
-            </div>
 
-            {/* Remove the details grid with purity, color, style, etc. */}
-
-            {/* Add action buttons container */}
+            {/* Action Buttons */}
             <div className={styles.actionButtons}>
               <a 
                 href={`https://maps.google.com/?q=${selectedStoreData.lat},${selectedStoreData.lng}`}
@@ -790,13 +813,13 @@ useEffect(() => {
                 rel="noopener noreferrer"
                 className={styles.directionsButton}
               >
-                Get Directions On Google Maps
+                Get Directions
               </a>
               <Link
-                href={`/products/${selectedStoreData.id}`}
+                href={`/stores/${selectedStoreData.id}`} // Changed from /products/ to /stores/
                 className={styles.detailsButton}
               >
-                View More Details
+                View Store Details
               </Link>
             </div>
           </div>

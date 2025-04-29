@@ -194,3 +194,52 @@
   background-color: #F44336;
   box-shadow: 0 0 8px rgba(244, 67, 54, 0.5);
 }
+
+.sortSelect {
+  background-color: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sortSelect:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.sortSelect option {
+  background-color: black;
+  color: #FFD700;
+}
+
+.priceSort {
+  /* Base styles */
+  appearance: none;
+  background-color: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* Custom arrow positioning */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23FFD700' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+}
+
+.priceSort:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.priceSort option {
+  background-color: black;
+  color: #FFD700;
+  padding: 0.5rem;
+}
