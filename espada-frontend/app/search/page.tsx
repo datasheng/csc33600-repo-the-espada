@@ -18,6 +18,8 @@ import {
 } from '../data/stores';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import CustomListbox from '../components/CustomListbox';
 
 const SearchPage: React.FC = () => {
   const router = useRouter();
@@ -226,19 +228,21 @@ const SearchPage: React.FC = () => {
                 {/* Gold Purity Filter - Third */}
                 <div className="space-y-2">
                   <label className="text-[#FFD700] text-lg font-medium">Gold Purity</label>
-                  <select
-                    name="goldPurity"
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Purities' },
+                      { value: '10', label: '10K Gold' },
+                      { value: '14', label: '14K Gold' },
+                      { value: '18', label: '18K Gold' },
+                      { value: '22', label: '22K Gold' },
+                      { value: '24', label: '24K Pure Gold' },
+                    ]}
                     value={filters.goldPurity}
-                    onChange={handleFilterChange}
-                    className={styles.filterSelect}
-                  >
-                    <option value="">All Purities</option>
-                    <option value="10">10K Gold</option>
-                    <option value="14">14K Gold</option>
-                    <option value="18">18K Gold</option>
-                    <option value="22">22K Gold</option>
-                    <option value="24">24K Pure Gold</option>
-                  </select>
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'goldPurity', value }
+                    } as React.ChangeEvent<HTMLSelectElement>)}
+                    label="Gold Purity"
+                  />
                 </div>
               </div>
 
@@ -247,37 +251,45 @@ const SearchPage: React.FC = () => {
                 {/* Chain Thickness Filter */}
                 <div className="space-y-2">
                   <label className="text-[#FFD700] text-lg font-medium">Chain Thickness</label>
-                  <select
-                    name="thickness"
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Thicknesses' },
+                      ...Array.from({ length: 39 }, (_, i) => {
+                        const thickness = (i + 2) / 2;
+                        return {
+                          value: `${thickness} mm`,
+                          label: `${thickness} mm`
+                        };
+                      })
+                    ]}
                     value={filters.thickness}
-                    onChange={handleFilterChange}
-                    className={styles.filterSelect}
-                  >
-                    <option value="">All Thicknesses</option>
-                    {Array.from({ length: 39 }, (_, i) => (i + 2) / 2).map(thickness => (
-                      <option key={thickness} value={`${thickness} mm`}>
-                        {thickness} mm
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'thickness', value }
+                    } as React.ChangeEvent<HTMLSelectElement>)}
+                    label="Chain Thickness"
+                  />
                 </div>
 
                 {/* Chain Length Filter */}
                 <div className="space-y-2">
                   <label className="text-[#FFD700] text-lg font-medium">Chain Length</label>
-                  <select
-                    name="length"
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Lengths' },
+                      ...Array.from({ length: 8 }, (_, i) => {
+                        const length = 16 + (i * 2);
+                        return {
+                          value: `${length} in`,
+                          label: `${length} inches`
+                        };
+                      })
+                    ]}
                     value={filters.length}
-                    onChange={handleFilterChange}
-                    className={styles.filterSelect}
-                  >
-                    <option value="">All Lengths</option>
-                    {Array.from({ length: 8 }, (_, i) => 16 + (i * 2)).map(length => (
-                      <option key={length} value={`${length} in`}>
-                        {length} inches
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'length', value }
+                    } as React.ChangeEvent<HTMLSelectElement>)}
+                    label="Chain Length"
+                  />
                 </div>
               </div>
             </div>
@@ -339,9 +351,12 @@ const SearchPage: React.FC = () => {
                             <h2 className="text-2xl text-white font-bold mb-2 tracking-tight">
                               {getFormattedProductName(product)}
                             </h2>
-                            <h3 className="text-xl font-bold text-[#FFD700] mb-2 italic">
+                            <Link 
+                              href={`/stores/${store.id}`}
+                              className="text-xl font-bold text-[#FFD700] mb-2 italic hover:text-[#e6c200] transition-colors inline-block"
+                            >
                               {store.name}
-                            </h3>
+                            </Link>
                             <p className="text-gray-400 text-sm mb-2">
                               {store.address}
                             </p>

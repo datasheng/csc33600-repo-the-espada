@@ -11,6 +11,9 @@ export interface Store {
   rating: number;
   numReviews: number;
   hours: StoreHours[];
+  phone: string;
+  email: string;
+  website?: string;
 }
 
 export interface Product {
@@ -23,6 +26,7 @@ export interface Product {
   length: string;
   color: string;
   weight: number;
+  productUrl?: string;  // Optional URL for online product listing
 }
 
 export interface StoreHours {
@@ -91,6 +95,8 @@ export const stores: Store[] = [
     lng: -74.006,
     rating: 4.5,
     numReviews: 128,
+    phone: "(212) 555-0123",
+    email: "info@golddiamonddistrict.com",
     hours: [
       { day: 'Monday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
       { day: 'Tuesday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
@@ -109,6 +115,9 @@ export const stores: Store[] = [
     lng: -73.9934,
     rating: 4.2,
     numReviews: 86,
+    phone: "(212) 555-0456",
+    email: "sales@empiregoldexchange.com",
+    website: "https://empiregoldexchange.com",
     hours: [
       { day: 'Monday', open: '9:00 AM', close: '7:00 PM', isClosed: false },
       { day: 'Tuesday', open: '9:00 AM', close: '7:00 PM', isClosed: false },
@@ -127,6 +136,9 @@ export const stores: Store[] = [
     lng: -73.9867,
     rating: 4.8,
     numReviews: 234,
+    phone: "(212) 555-0789",
+    email: "info@royalgoldnyc.com",
+    website: "https://royalgoldnyc.com",
     hours: [
       { day: 'Monday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
       { day: 'Tuesday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
@@ -185,7 +197,8 @@ export const products: Product[] = [
     thickness: "4 mm",
     length: "24 in",
     color: "Rose",
-    weight: 25.7
+    weight: 25.7,
+    productUrl: "https://empiregoldexchange.com/products/miami-cuban-rose-gold"
   },
   {
     productId: '6',
@@ -220,7 +233,8 @@ export const products: Product[] = [
     thickness: "3 mm",
     length: "18 in",
     color: "Two-Color",
-    weight: 17.4
+    weight: 17.4,
+    productUrl: "https://royalgoldnyc.com/products/franco-two-tone-chain"
   },
   {
     productId: '8',

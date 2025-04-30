@@ -30,6 +30,8 @@ import { useSearchParams } from 'next/navigation';
 // Add this to your imports at the top
 import { useRouter } from 'next/navigation';
 
+import CustomListbox from '../components/CustomListbox';
+
 interface CustomMarker extends Marker {
   storeId?: string;
 }
@@ -521,7 +523,7 @@ const MapComponent: React.FC = () => {
         setShowExtendedInfo(true);
   
         // Clear URL parameter
-        window.history.replaceState({}, '', '/Map');
+        window.history.replaceState({}, '', '/map');
       }
     };
   
@@ -574,93 +576,122 @@ const MapComponent: React.FC = () => {
             <div style={{ marginBottom: "24px" }}>
               <div style={{ marginBottom: "24px" }}>
                 <label>Gold Purity</label>
-                <select
-                  name="goldPurity"
-                  value={pendingFilters.goldPurity}
-                  onChange={handleFilterChange}
-                >
-                  <option value="">All Purities</option>
-                  <option value="10">10K Gold</option>
-                  <option value="14">14K Gold</option>
-                  <option value="18">18K Gold</option>
-                  <option value="22">22K Gold</option>
-                  <option value="24">24K Pure Gold</option>
-                </select>
+                <div className={styles.mapFilterWrapper}>
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Purities' },
+                      { value: '10', label: '10K Gold' },
+                      { value: '14', label: '14K Gold' },
+                      { value: '18', label: '18K Gold' },
+                      { value: '22', label: '22K Gold' },
+                      { value: '24', label: '24K Pure Gold' },
+                    ]}
+                    value={pendingFilters.goldPurity}
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'goldPurity', value }
+                    } as any)}
+                    label="Gold Purity"
+                  />
+                </div>
               </div>
 
+              {/* Update each CustomListbox section */}
               <div style={{ marginBottom: "24px" }}>
                 <label>Chain Type</label>
-                <select
-                  name="chainStyle"
-                  value={pendingFilters.chainStyle}
-                  onChange={handleFilterChange}
-                >
-                  <option value="">All Types</option>
-                  <option value="Anchor">Anchor Chain</option>
-                  <option value="Ball">Ball Chain</option>
-                  <option value="Box">Box Chain</option>
-                  <option value="Byzantine">Byzantine Chain</option>
-                  <option value="Cable">Cable Chain</option>
-                  <option value="Figaro">Figaro Chain</option>
-                  <option value="Figarope">Figarope Chain</option>
-                  <option value="FlatCurb">Flat Curb Chain</option>
-                  <option value="Franco">Franco Chain</option>
-                  <option value="Herringbone">Herringbone Chain</option>
-                  <option value="Mariner">Mariner Chain</option>
-                  <option value="MiamiCuban">Miami Cuban Chain</option>
-                  <option value="MoonCut">Moon Cut Chain</option>
-                  <option value="Rope">Rope Chain</option>
-                  <option value="Wheat">Wheat Chain</option>
-                </select>
+                <div className={styles.mapFilterWrapper}>
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Types' },
+                      { value: 'Anchor', label: 'Anchor Chain' },
+                      { value: 'Ball', label: 'Ball Chain' },
+                      { value: 'Box', label: 'Box Chain' },
+                      { value: 'Byzantine', label: 'Byzantine Chain' },
+                      { value: 'Cable', label: 'Cable Chain' },
+                      { value: 'Figaro', label: 'Figaro Chain' },
+                      { value: 'Figarope', label: 'Figarope Chain' },
+                      { value: 'FlatCurb', label: 'Flat Curb Chain' },
+                      { value: 'Franco', label: 'Franco Chain' },
+                      { value: 'Herringbone', label: 'Herringbone Chain' },
+                      { value: 'Mariner', label: 'Mariner Chain' },
+                      { value: 'MiamiCuban', label: 'Miami Cuban Chain' },
+                      { value: 'MoonCut', label: 'Moon Cut Chain' },
+                      { value: 'Rope', label: 'Rope Chain' },
+                      { value: 'Wheat', label: 'Wheat Chain' },
+                    ]}
+                    value={pendingFilters.chainStyle}
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'chainStyle', value }
+                    } as any)}
+                    label="Chain Type"
+                  />
+                </div>
               </div>
 
-              {/* Add this after the Chain Type filter */}
               <div style={{ marginBottom: "24px" }}>
                 <label>Chain Color</label>
-                <select
-                  name="color"
-                  value={pendingFilters.color}
-                  onChange={handleFilterChange}
-                >
-                  <option value="">All Colors</option>
-                  <option value="Yellow">Yellow Gold</option>
-                  <option value="Rose">Rose Gold</option>
-                  <option value="White">White Gold</option>
-                  <option value="Two-Color">Two-Tone</option>
-                  <option value="Tri-Color">Tri-Color</option>
-                </select>
+                <div className={styles.mapFilterWrapper}>
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Colors' },
+                      { value: 'Yellow', label: 'Yellow Gold' },
+                      { value: 'Rose', label: 'Rose Gold' },
+                      { value: 'White', label: 'White Gold' },
+                      { value: 'Two-Color', label: 'Two-Tone' },
+                      { value: 'Tri-Color', label: 'Tri-Color' },
+                    ]}
+                    value={pendingFilters.color}
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'color', value }
+                    } as any)}
+                    label="Chain Color"
+                  />
+                </div>
               </div>
 
               <div style={{ marginBottom: "24px" }}>
                 <label>Chain Thickness</label>
-                <select
-                  name="thickness"
-                  value={pendingFilters.thickness}  // Changed from filters.thickness
-                  onChange={handleFilterChange}
-                >
-                  <option value="">All Thicknesses</option>
-                  {Array.from({ length: 39 }, (_, i) => (i + 2) / 2).map(thickness => (
-                    <option key={thickness} value={`${thickness}mm`}>
-                      {thickness} mm
-                    </option>
-                  ))}
-                </select>
+                <div className={styles.mapFilterWrapper}>
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Thicknesses' },
+                      ...Array.from({ length: 39 }, (_, i) => {
+                        const thickness = (i + 2) / 2;
+                        return {
+                          value: `${thickness} mm`,
+                          label: `${thickness} mm`
+                        };
+                      })
+                    ]}
+                    value={pendingFilters.thickness}
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'thickness', value }
+                    } as any)}
+                    label="Chain Thickness"
+                  />
+                </div>
               </div>
 
               <div style={{ marginBottom: "24px" }}>
                 <label>Chain Length</label>
-                <select
-                  name="length"
-                  value={pendingFilters.length}  // Changed from filters.length
-                  onChange={handleFilterChange}
-                >
-                  <option value="">All Lengths</option>
-                  {Array.from({ length: 8 }, (_, i) => 16 + (i * 2)).map(length => (
-                    <option key={length} value={`${length}in`}>
-                      {length} in
-                    </option>
-                  ))}
-                </select>
+                <div className={styles.mapFilterWrapper}>
+                  <CustomListbox
+                    options={[
+                      { value: '', label: 'All Lengths' },
+                      ...Array.from({ length: 8 }, (_, i) => {
+                        const length = 16 + (i * 2);
+                        return {
+                          value: `${length} in`,
+                          label: `${length} inches`
+                        };
+                      })
+                    ]}
+                    value={pendingFilters.length}
+                    onChange={(value) => handleFilterChange({
+                      target: { name: 'length', value }
+                    } as any)}
+                    label="Chain Length"
+                  />
+                </div>
               </div>
 
               {/* Apply Filters Button */}

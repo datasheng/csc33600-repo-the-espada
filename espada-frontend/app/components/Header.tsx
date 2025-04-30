@@ -70,7 +70,7 @@ const Header: React.FC = () => {
 
   return (
     <header className={styles.header}>
-      <Link href="/heroSection" className={styles.logoLink}>
+      <Link href="/" className={styles.logoLink}>
         <Image
           src="/goldlinks-header-logo.svg"
           alt="GoldLinks Logo"
@@ -179,9 +179,10 @@ const Header: React.FC = () => {
             </div>
           )}
         </div>
-        <Link href="/Map" className={styles.navLink}>Map</Link>
-        <Link href="/AboutUs" className={styles.navLink}>About Us</Link>
-        <Link href="/ContactUs" className={styles.navLink}>Contact</Link>
+        <Link href="/map" className={styles.navLink}>Map</Link>
+        <Link href="/linkcard" className={styles.navLink}>LinkCard</Link>
+        <Link href="/about-us" className={styles.navLink}>About</Link>
+        <Link href="/contact-us" className={styles.navLink}>Contact</Link>
         <Link href="/login" className={styles.authButton}>Login</Link>
         <Link href="/signup" className={styles.authButton}>Sign Up</Link>
       </nav>

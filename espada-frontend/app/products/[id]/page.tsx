@@ -97,9 +97,15 @@ const ProductPage = () => {
               <h1 className="text-4xl text-[#FFD700] font-bold mb-4 tracking-tight">
                 {getFormattedProductName(product)}
               </h1>
-              <h2 className="text-2xl text-white mb-4 opacity-90">
+              <h2 className="text-2xl text-white mb-2 opacity-90">
                 {store.name}
               </h2>
+              <div className="mb-2">
+                <StarRating rating={store.rating} numReviews={store.numReviews} size="medium" />
+              </div>
+              <p className="text-gray-400">
+                {store.address}
+              </p>
             </div>
 
             {/* Product Details */}
@@ -122,22 +128,34 @@ const ProductPage = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="mt-6 flex justify-end gap-4">
-              <Link
-                href={`/stores/${store.id}`}
-                className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors"
-              >
-                View Store Details
-              </Link>
-              <Link
-                href={{
-                  pathname: '/Map',
-                  query: { storeId: store.id }
-                }}
-                className="bg-[#FFD700] text-black px-6 py-3 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
-              >
-                View Store on Map
-              </Link>
+            <div className="mt-6">
+              <div className="flex flex-wrap justify-center gap-4">
+                {product.productUrl && (
+                  <Link
+                    href={product.productUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-[#e72114] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#d41f13] transition-colors"
+                  >
+                    View on Store Website
+                  </Link>
+                )}
+                <Link
+                  href={`/stores/${store.id}`}
+                  className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors"
+                >
+                  View Store Details
+                </Link>
+                <Link
+                  href={{
+                    pathname: '/map',
+                    query: { storeId: store.id }
+                  }}
+                  className="bg-[#FFD700] text-black px-6 py-3 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
+                >
+                  View Store on Map
+                </Link>
+              </div>
             </div>
           </div>
         </div>
