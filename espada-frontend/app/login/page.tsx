@@ -11,7 +11,7 @@ export default function Login() {
                 <div className='relative bg-[url("/hero-background.jpg")] bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center p-4'>
                 <div className="absolute inset-0 bg-white/70 z-0"></div>
 
-                        <div className=" relative bg-black/70 text-gray-100 px-8 py-6 rounded-lg border border-solid border-yellow-400 border-10">
+                        <div className=" relative bg-black/70 text-black px-8 py-6 rounded-lg border border-solid border-yellow-400 border-10">
                             <h1 className="font-bold py-2 text-center mb-2 text-2xl text-yellow-400">Login</h1>
                             <form action="/login">
                                 <div className="mb-4">

@@ -14,7 +14,7 @@ export default function Signup() {
                     <div className=" relative  bg-[url('/hero-background.jpg')] 
                     bg-cover bg-center bg-no-repeat min-h-screen flex flex-col items-center justify-center mx-auto h-screen px-10 py-8 drop-shadow-sm">
                         <div className="absolute inset-0 bg-white/70 z-0"></div>
-                        <div className=" relative bg-black/70 text-gray-100 border-yellow-400 border-10 px-14 py-8 rounded-lg border border-solid  border-10">
+                        <div className=" relative bg-black/70 text-black border-yellow-400 border-10 px-14 py-8 rounded-lg border border-solid  border-10">
                             <h1 className="font-bold py-2 text-center text-2xl mb-2 text-yellow-400">Sign Up</h1>
                             <form action="/login" method="POST">
                                 <div className="mb-4">

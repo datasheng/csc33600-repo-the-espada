@@ -219,3 +219,35 @@
   background: rgba(255, 215, 0, 0.1);
   color: #FFD700;
 }
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.userCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #222;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.userCircle:hover {
+  background-color: #444;
+}
+
+.logoutButton {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
