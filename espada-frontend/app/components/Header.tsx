@@ -66,7 +66,7 @@ const Header: React.FC = () => {
 
   return (
     <header className={styles.header}>
-      <Link href="/heroSection" className={styles.logoLink}>
+      <Link href="/" className={styles.logoLink}>
         <Image
           src="/goldlinks-header-logo.svg"
           alt="GoldLinks Logo"
@@ -161,26 +161,11 @@ const Header: React.FC = () => {
             </div>
           )}
         </div>
-
         <Link href="/Map" className={styles.navLink}>Map</Link>
         <Link href="/AboutUs" className={styles.navLink}>About Us</Link>
         <Link href="/ContactUs" className={styles.navLink}>Contact</Link>
-
-        {user ? (
-          <div className={styles.userSection}>
-            <Link href="/profile">
-              <div className={styles.userCircle}>
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            </Link>
-            <button onClick={handleLogout} className={styles.logoutButton}>Logout</button>
-          </div>
-        ) : (
-          <>
-            <Link href="/login" className={styles.authButton}>Login</Link>
-            <Link href="/signup" className={styles.authButton}>Sign Up</Link>
-          </>
-        )}
+        <Link href="/login" className={styles.authButton}>Login</Link>
+        <Link href="/signup" className={styles.authButton}>Sign Up</Link>
       </nav>
     </header>
   );

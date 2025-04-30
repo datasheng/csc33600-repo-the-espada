@@ -21,15 +21,16 @@ export default function Footer() {
           <h3>Features</h3>
           <ul>
             <li><Link href="/search">Find Gold Chains</Link></li>
-            <li><Link href="/Map">Store Map</Link></li>
+            <li><Link href="/map">Map</Link></li>
+            <li><Link href="/linkcard">Apply For LinkCard</Link></li>
           </ul>
         </div>
 
         <div className={styles.section}>
           <h3>Company</h3>
           <ul>
-            <li><Link href="/AboutUs">About Us</Link></li>
-            <li><Link href="/ContactUs">Contact</Link></li>
+            <li><Link href="/about-us">About</Link></li>
+            <li><Link href="/contact-us">Contact</Link></li>
             <li><Link href="/terms">Terms of Service</Link></li>
             <li><Link href="/privacy">Privacy Policy</Link></li>
           </ul>
@@ -46,7 +47,7 @@ export default function Footer() {
         </div>
 
         <div className={styles.section}>
-          <h3>Newsletter</h3>
+          <h3>Sign Up For Our Newsletter</h3>
           <div className={styles.emailInput}>
             <input 
               type="email" 

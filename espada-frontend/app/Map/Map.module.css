@@ -130,7 +130,7 @@
   top: 12px; /* Match the filterMenu's top position */
   left: 270px; /* 250px (filterMenu width) + 12px (filterMenu left) + 12px (gap) */
   width: 369px; /* Increased from 300px to 380px */
-  max-height: calc(100vh - 79px); /* Match filterMenu's max-height */
+  max-height: calc(100vh - 88px); /* Match filterMenu's max-height */
   background: rgba(0, 0, 0, 0.9);
   padding: 20px;
   border-radius: 8px;
@@ -740,4 +740,49 @@
   font-size: 0.9rem;
   margin-bottom: 4px;
   font-style: italic;
+}
+
+.mapFilterWrapper :global(.relative) button {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  padding: 8px 12px !important;
+}
+
+.mapFilterWrapper :global(.relative) ul {
+  font-size: 14px !important;
+}
+
+.mapFilterWrapper :global(.relative) ul li {
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+}
+
+.mapFilterWrapper :global(.relative) [data-selected="true"] {
+  font-size: 14px !important;
+}
+
+.mapFilterWrapper :global(.relative) button span {
+  font-size: 14px !important;
+}
+
+/* Target the dropdown container */
+.mapFilterWrapper :global([role="listbox"]) {
+  font-size: 14px !important;
+}
+
+/* Target individual listbox options */
+.mapFilterWrapper :global([role="option"]) {
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+}
+
+/* Target selected option */
+.mapFilterWrapper :global([role="option"][data-highlighted]) {
+  font-size: 14px !important;
+  background-color: rgba(255, 215, 0, 0.1) !important;
+}
+
+/* Add this new style for the dropdown options */
+.mapFilterWrapper :global(.relative) ul li {
+  font-size: 14px !important;
 }
