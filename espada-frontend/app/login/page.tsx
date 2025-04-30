@@ -16,11 +16,11 @@ export default function Login() {
                             <form action="/login">
                                 <div className="mb-4">
                                     <label className="block mb-2">Email</label>
-                                    <input type="email" className="border border-solid border-grey w-full" required></input>
+                                    <input type="email" className="border border-solid text-black border-grey w-full" required></input>
                                 </div>
                                 <div className="mb-4">
                                     <label className="block mb-2">Password</label>
-                                    <input type="password" className="border border-solid border-grey w-full" required></input>
+                                    <input type="password" className="border border-solid text-black border-grey w-full" required></input>
                                 </div>
                                 <div className="flex justify-center">
                                     <button className="text-white rounded-lg border border-solid border-yellow-400  flex items-center 
