@@ -1,0 +1,260 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgb(0, 0, 0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.logoLink {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo {
+  object-fit: contain;
+  clip-path: inset(1px 1px 1px 1px); /* Crop 1px from all sides */
+  position: relative;
+  display: block;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.navLink {
+  color: #FFD700;
+  text-decoration: none;
+  font-size: 18px; /* Increased from 16px */
+  transition: color 0.2s ease;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.navLink:hover {
+  color: #FFF;
+}
+
+/* Base auth button style (will be used for login) */
+.authButton {
+  background: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 16px; /* Increased from 14px */
+  transition: all 0.2s ease;
+  font-weight: bold;
+  height: 36px; /* Add fixed height */
+  line-height: 20px; /* Adjust line height to center text vertically */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Base hover state (will be used for login) */
+.authButton:hover {
+  background: #FFD700;
+  color: black;
+}
+
+/* Sign up button specific styles */
+.authButton[href="/signup"] {
+  background: #FFD700;
+  color: black;
+  border-color: #FFD700;
+}
+
+/* Sign up button hover state */
+.authButton[href="/signup"]:hover {
+  background: #e72114;
+  border-color: #e72114;
+  color: white;
+}
+
+/* Keep original hover state for login button */
+.authButton[href="/login"]:hover {
+  color: black;
+  border-color: #e6b800
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownButton {
+  color: #FFD700;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;  /* Match navLink size */
+  font-weight: bold; /* Match navLink weight */
+  cursor: pointer;
+}
+
+.dropdownArrow {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.dropdownArrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdownContent {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: black;
+  min-width: 200px;
+  padding: 8px 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dropdownItem {
+  color: rgba(255, 255, 255, 0.7);
+  padding: 12px 0;  /* Adjust padding to account for margin */
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  position: relative;
+  padding-right: 24px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  margin: 0 16px;  /* Add horizontal margin */
+  width: calc(100% - 32px);  /* Account for margins */
+  cursor: pointer;
+}
+
+/* Remove border from last item */
+.dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.dropdownItem:hover {
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  cursor: pointer;
+}
+
+.dropdownButton:hover {
+  color: white;
+}
+
+.submenuArrow {
+  position: absolute;
+  right: 16px;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.submenuArrow.open {
+  transform: rotate(90deg);
+}
+
+.submenuContent {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background: black;
+  padding: 8px 0;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Add specific width for chain type submenu */
+.dropdown [data-submenu="type"] .submenuContent {
+  min-width: 360px;
+}
+
+/* Add specific width for purity submenu */
+.dropdown [data-submenu="purity"] .submenuContent {
+  min-width: 160px;
+}
+
+.submenuContent .dropdownItem {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  margin: 0 16px;
+  padding: 12px 0;
+  width: calc(100% - 32px);
+}
+
+.submenuContent .dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.twoColumnSubmenu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 8px 0;
+}
+
+.submenuColumn {
+  min-width: 160px;
+}
+
+.seeAllButton {
+  text-align: left;
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.seeAllButton:hover {
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.userCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #222;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.userCircle:hover {
+  background-color: #444;
+}
+
+.logoutButton {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
