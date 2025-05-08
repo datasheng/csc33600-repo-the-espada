@@ -162,8 +162,8 @@ const Header: React.FC = () => {
           )}
         </div>
         <Link href="/map" className={styles.navLink}>Map</Link>
-        <Link href="/AboutUs" className={styles.navLink}>About Us</Link>
-        <Link href="/ContactUs" className={styles.navLink}>Contact</Link>
+        <Link href="/about-us" className={styles.navLink}>About Us</Link>
+        <Link href="/contact-us" className={styles.navLink}>Contact</Link>
         <Link href="/login" className={styles.authButton}>Login</Link>
         <Link href="/signup" className={styles.authButton}>Sign Up</Link>
       </nav>
