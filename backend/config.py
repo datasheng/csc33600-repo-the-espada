@@ -1,24 +1,11 @@
-from os import environ
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Config:
-    API_PREFIX = '/api'
-    
-    # API Endpoints
-    ENDPOINTS = {
-        'stores': f'{API_PREFIX}/stores',
-        'products': f'{API_PREFIX}/products',
-        'auth': {
-            'login': f'{API_PREFIX}/auth/login',
-            'signup': f'{API_PREFIX}/auth/signup',
-            'logout': f'{API_PREFIX}/auth/logout'
-        }
-    }
-    
-    # Server Configuration
-    HOST = environ.get('FLASK_HOST', 'localhost')
-    PORT = int(environ.get('FLASK_PORT', 5000))
-    DEBUG = environ.get('FLASK_DEBUG', True)
-    
-    # Database Configuration
-    SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URL', 'mysql://root:@localhost/espada_db')
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    MYSQL_HOST = os.getenv('MYSQL_HOST')
+    MYSQL_USER = os.getenv('MYSQL_USER')
+    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+    MYSQL_DB = os.getenv('MYSQL_DB')
