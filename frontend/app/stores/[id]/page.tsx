@@ -29,6 +29,11 @@ const LoadingState = () => (
   </div>
 );
 
+const DAYS_OF_WEEK = [
+  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+  'Friday', 'Saturday', 'Sunday'
+];
+
 const StoreContent = ({ store, products }: { store: Store, products: Product[] }) => {
   const { isOpen, nextChange } = getStoreStatus(store.hours);
 
@@ -93,16 +98,21 @@ const StoreContent = ({ store, products }: { store: Store, products: Product[] }
           
           {/* Business Hours */}
           <div className="space-y-2 mb-6">
-            {store.hours.map((hour) => (
-              <div key={hour.day} className="flex justify-between">
-                <span className="text-gray-400 w-24 text-base font-medium">
-                  {hour.day}
-                </span>
-                <span className="text-white text-base">
-                  {hour.isClosed ? 'Closed' : `${hour.open} - ${hour.close}`}
-                </span>
-              </div>
-            ))}
+            {DAYS_OF_WEEK.map((day) => {
+              const hourData = store.hours.find(h => h.day === day);
+              return (
+                <div key={day} className="flex justify-between">
+                  <span className="text-gray-400 w-24 text-base font-medium">
+                    {day}
+                  </span>
+                  <span className="text-white text-base">
+                    {hourData 
+                      ? `${hourData.openTime} - ${hourData.closeTime}`
+                      : 'Closed'}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           {/* Action Buttons */}
@@ -146,7 +156,7 @@ const StoreContent = ({ store, products }: { store: Store, products: Product[] }
 
               <div className="flex justify-between items-center">
                 <span className="text-2xl font-bold text-[#FFD700]">
-                  ${product.price.toLocaleString()}
+                  ${product.set_price.toLocaleString()}
                 </span>
                 <Link
                   href={`/products/${product.productId}`}

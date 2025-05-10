@@ -117,7 +117,7 @@ const MapComponent: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Add new state for selected product ID
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
   // Add useEffect for map initialization to prevent SSR issues
   useEffect(() => {
@@ -198,8 +198,13 @@ const MapComponent: React.FC = () => {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setPendingFilters(prev => ({ ...prev, [name]: value }));
-    // This updates the visual state of filters but doesn't trigger filtering
+    let updatedValue = value;
+  
+    if (name === 'chain_thickness' || name === 'chain_length') {
+      updatedValue = value.replace(/[^0-9.]/g, ''); // Remove units
+    }
+  
+    setPendingFilters(prev => ({ ...prev, [name]: updatedValue }));
   };
 
   // Update the handlePriceSortChange function
@@ -217,9 +222,9 @@ const MapComponent: React.FC = () => {
     } else {
       sortedProducts.sort((a, b) => {
         if (value === "lowToHigh") {
-          return a.price - b.price;
+          return a.set_price - b.set_price;
         } else {
-          return b.price - a.price;
+          return b.set_price - a.set_price;
         }
       });
     }
@@ -247,7 +252,7 @@ const MapComponent: React.FC = () => {
   };
 
   // Update handleStoreClick to include productId
-  const handleStoreClick = async (storeId: string, productId: string) => {
+  const handleStoreClick = async (storeId: string, productId: number) => {
     const store = stores.find(s => s.id === storeId);
     if (!store || !map || !isValidIcon(selectedGoldIcon)) {
       console.error('Missing required data:', { store, map, selectedGoldIcon });
@@ -397,11 +402,11 @@ const MapComponent: React.FC = () => {
 
         // Filter products first
         const filtered = products.filter(product => {
-          if (currentFilters.goldPurity && product.purity !== parseInt(currentFilters.goldPurity)) return false;
-          if (currentFilters.chainStyle && product.style !== currentFilters.chainStyle) return false;
-          if (currentFilters.thickness && product.thickness !== currentFilters.thickness) return false;
-          if (currentFilters.length && product.length !== currentFilters.length) return false;
-          if (currentFilters.color && product.color !== currentFilters.color) return false;
+          if (currentFilters.goldPurity && product.chain_purity !== currentFilters.goldPurity) return false;
+          if (currentFilters.chainStyle && product.chain_type !== currentFilters.chainStyle) return false;
+          if (currentFilters.thickness && product.chain_thickness !== parseFloat(currentFilters.thickness)) return false;
+          if (currentFilters.length && product.chain_length !== parseFloat(currentFilters.length)) return false;
+          if (currentFilters.color && product.chain_color !== currentFilters.color) return false;
           return true;
         });
 
@@ -602,7 +607,7 @@ const MapComponent: React.FC = () => {
                   <CustomListbox
                     options={[
                       { value: '', label: 'All Types' },
-                      { value: 'Anchor', label: 'Anchor Chain' },
+                      { value: 'Anchor', label: 'ANCHOR' },
                       { value: 'Ball', label: 'Ball Chain' },
                       { value: 'Box', label: 'Box Chain' },
                       { value: 'Byzantine', label: 'Byzantine Chain' },
@@ -620,7 +625,7 @@ const MapComponent: React.FC = () => {
                     ]}
                     value={pendingFilters.chainStyle}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'chainStyle', value }
+                      target: { name: 'chain_type', value }
                     } as any)}
                     label="Chain Type"
                   />
@@ -664,7 +669,7 @@ const MapComponent: React.FC = () => {
                     ]}
                     value={pendingFilters.thickness}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'thickness', value }
+                      target: { name: 'chain_thickness', value }
                     } as any)}
                     label="Chain Thickness"
                   />
@@ -687,7 +692,7 @@ const MapComponent: React.FC = () => {
                     ]}
                     value={pendingFilters.length}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'length', value }
+                      target: { name: 'chain_length', value }
                     } as any)}
                     label="Chain Length"
                   />
@@ -736,9 +741,9 @@ const MapComponent: React.FC = () => {
             {filteredProducts
               .sort((a, b) => {
                 if (priceSort === "lowToHigh") {
-                  return a.price - b.price;
+                  return a.set_price - b.set_price;
                 } else if (priceSort === "highToLow") {
-                  return b.price - a.price;
+                  return b.set_price - a.set_price;
                 }
                 return 0;
               })
@@ -760,13 +765,13 @@ const MapComponent: React.FC = () => {
                         {store.name}
                       </p>
                       <p className={styles.productPrice}>
-                        ${product.price.toLocaleString()}
+                        ${product.set_price.toLocaleString()}
                       </p>
                     </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        router.push(`/products/${product.productId}`);
+                        router.push(`/products/${product.productId.toString()}`);
                       }}
                       className={styles.viewProductButton}
                     >
@@ -822,16 +827,19 @@ const MapComponent: React.FC = () => {
               
               {showHours && (
                 <div className={styles.hoursDropdown}>
-                  {selectedStoreData.hours.map((hourData) => (
-                    <div key={hourData.day} className={styles.hourRow}>
-                      <span className={styles.dayName}>{hourData.day}</span>
-                      <span>
-                        {hourData.isClosed 
-                          ? 'Closed'
-                          : `${hourData.open} - ${hourData.close}`}
-                      </span>
-                    </div>
-                  ))}
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                    const hourData = selectedStoreData.hours.find(h => h.day === day);
+                    return (
+                      <div key={day} className={styles.hourRow}>
+                        <span className={styles.dayName}>{day}</span>
+                        <span>
+                          {hourData 
+                            ? `${hourData.openTime} - ${hourData.closeTime}`
+                            : 'Closed'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -28,9 +28,9 @@ const SearchPage: React.FC = () => {
   const [filters, setFilters] = useState({
     goldPurity: "",
     chainStyle: "",
-    color: "",
-    thickness: "",
-    length: "",
+    chainColor: "", // Updated from color
+    chainThickness: "", // Updated from thickness
+    chainLength: "", // Updated from length
   });
   const [showResults, setShowResults] = useState(false);
   const [stores, setStores] = useState<Store[]>([]);
@@ -67,16 +67,16 @@ const SearchPage: React.FC = () => {
         [filterType]: filterValue
       }));
 
-      // Filter products based on criteria
+      // Update filter logic to use new field names
       const filtered = products.filter(product => {
         if (filterType === 'goldPurity' && filterValue) {
-          return product.purity === parseInt(filterValue);
+          return product.chain_purity === filterValue;
         }
         if (filterType === 'chainStyle' && filterValue) {
-          return product.style === filterValue;
+          return product.chain_type === filterValue;
         }
-        if (filterType === 'color' && filterValue) {
-          return product.color === filterValue;
+        if (filterType === 'chainColor' && filterValue) {
+          return product.chain_color === filterValue;
         }
         return true;
       });
@@ -113,11 +113,11 @@ const SearchPage: React.FC = () => {
     e.preventDefault();
     
     const filtered = products.filter(product => {
-      if (filters.goldPurity && product.purity !== parseInt(filters.goldPurity)) return false;
-      if (filters.chainStyle && product.style !== filters.chainStyle) return false;
-      if (filters.thickness && product.thickness !== filters.thickness) return false;
-      if (filters.length && product.length !== filters.length) return false;
-      if (filters.color && product.color !== filters.color) return false;
+      if (filters.goldPurity && product.chain_purity !== filters.goldPurity) return false;
+      if (filters.chainStyle && product.chain_type !== filters.chainStyle) return false;
+      if (filters.chainThickness && product.chain_thickness !== parseFloat(filters.chainThickness)) return false;
+      if (filters.chainLength && product.chain_length !== parseFloat(filters.chainLength)) return false;
+      if (filters.chainColor && product.chain_color !== filters.chainColor) return false;
       return true;
     });
 
@@ -204,9 +204,9 @@ const SearchPage: React.FC = () => {
                         <motion.div
                           key={colorOption.id}
                           onClick={() => handleFilterChange({
-                            target: { name: 'color', value: colorOption.id }
+                            target: { name: 'chainColor', value: colorOption.id }
                           } as React.ChangeEvent<HTMLSelectElement>)}
-                          className={`${styles.chainTypeSelector} ${filters.color === colorOption.id ? styles.selected : ''}`}
+                          className={`${styles.chainTypeSelector} ${filters.chainColor === colorOption.id ? styles.selected : ''}`}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -257,14 +257,14 @@ const SearchPage: React.FC = () => {
                       ...Array.from({ length: 39 }, (_, i) => {
                         const thickness = (i + 2) / 2;
                         return {
-                          value: `${thickness} mm`,
+                          value: thickness.toString(),
                           label: `${thickness} mm`
                         };
                       })
                     ]}
-                    value={filters.thickness}
+                    value={filters.chainThickness}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'thickness', value }
+                      target: { name: 'chainThickness', value }
                     } as React.ChangeEvent<HTMLSelectElement>)}
                     label="Chain Thickness"
                   />
@@ -279,14 +279,14 @@ const SearchPage: React.FC = () => {
                       ...Array.from({ length: 8 }, (_, i) => {
                         const length = 16 + (i * 2);
                         return {
-                          value: `${length} in`,
+                          value: `${length}`,
                           label: `${length} inches`
                         };
                       })
                     ]}
-                    value={filters.length}
+                    value={filters.chainLength}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'length', value }
+                      target: { name: 'chainLength', value }
                     } as React.ChangeEvent<HTMLSelectElement>)}
                     label="Chain Length"
                   />
@@ -332,9 +332,9 @@ const SearchPage: React.FC = () => {
                 {[...filteredProducts]
                   .sort((a, b) => {
                     if (priceSort === "lowToHigh") {
-                      return a.price - b.price;
+                      return a.set_price - b.set_price;
                     } else if (priceSort === "highToLow") {
-                      return b.price - a.price;
+                      return b.set_price - a.set_price;
                     }
                     return 0;
                   })
@@ -364,7 +364,7 @@ const SearchPage: React.FC = () => {
                           </div>
                           <div className="text-right flex flex-col items-end gap-4">
                             <div className="text-3xl font-bold text-[#FFD700]">
-                              ${product.price.toLocaleString()}
+                              ${product.set_price.toLocaleString()}
                             </div>
                             <button
                               onClick={() => router.push(`/products/${product.productId}`)}

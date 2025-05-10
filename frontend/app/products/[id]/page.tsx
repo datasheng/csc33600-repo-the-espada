@@ -21,7 +21,7 @@ const ProductPage = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
   const params = useParams();
-  const productId = params.id as string;
+  const productId = parseInt(params.id as string, 10); // Convert to number since productId is now INTEGER
   const router = useRouter();
 
   useEffect(() => {
@@ -111,18 +111,18 @@ const ProductPage = () => {
             {/* Product Details */}
             <div className="bg-white/10 rounded-lg p-6">
               <h2 className="text-2xl font-bold text-[#FFD700] mb-4">
-                ${product.price.toLocaleString()}
+                ${product.set_price.toLocaleString()}
               </h2>
               
               <div>
                 <h3 className="text-gray-400 mb-2">Specifications</h3>
                 <ul className="space-y-2">
-                  <li className="text-white">Purity: {product.purity}K Gold</li>
-                  <li className="text-white">Color: {product.color}</li>
-                  <li className="text-white">Style: {product.style}</li>
-                  <li className="text-white">Thickness: {product.thickness}</li>
-                  <li className="text-white">Length: {product.length}</li>
-                  <li className="text-white">Weight: {product.weight} g</li>
+                  <li className="text-white">Purity: {product.chain_purity}</li>
+                  <li className="text-white">Color: {product.chain_color}</li>
+                  <li className="text-white">Style: {product.chain_type}</li>
+                  <li className="text-white">Thickness: {product.chain_thickness}mm</li>
+                  <li className="text-white">Length: {product.chain_length}in</li>
+                  <li className="text-white">Weight: {product.chain_weight}g</li>
                 </ul>
               </div>
             </div>
@@ -130,16 +130,6 @@ const ProductPage = () => {
             {/* Action Buttons */}
             <div className="mt-6">
               <div className="flex flex-wrap justify-center gap-4">
-                {product.productUrl && (
-                  <Link
-                    href={product.productUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-[#e72114] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#d41f13] transition-colors"
-                  >
-                    View on Store Website
-                  </Link>
-                )}
                 <Link
                   href={`/stores/${store.id}`}
                   className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors"

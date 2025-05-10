@@ -17,23 +17,21 @@ export interface Store {
 }
 
 export interface Product {
-  productId: string;
+  productId: number;  // Changed from string to INTEGER
   storeId: string;
-  price: number;
-  purity: number;
-  style: string;
-  thickness: string;
-  length: string;
-  color: string;
-  weight: number;
-  productUrl?: string;  // Optional URL for online product listing
+  set_price: number;  // Changed from price to set_price
+  chain_purity: string;  // Changed from purity (number) to chain_purity (string)
+  chain_type: string;  // Changed from style to chain_type
+  chain_thickness: number;  // Changed from string to DECIMAL
+  chain_length: number;  // Changed from string to DECIMAL
+  chain_color: string;  // Changed from color to chain_color
+  chain_weight: number;  // Changed from weight to chain_weight
 }
 
 export interface StoreHours {
   day: string;
-  open: string;
-  close: string;
-  isClosed: boolean;
+  openTime: string;    // Changed from 'open'
+  closeTime: string;   // Changed from 'close'
 }
 
 export interface StoreStatus {
@@ -98,13 +96,12 @@ export const stores: Store[] = [
     phone: "(212) 555-0123",
     email: "info@golddiamonddistrict.com",
     hours: [
-      { day: 'Monday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
-      { day: 'Tuesday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
-      { day: 'Wednesday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
-      { day: 'Thursday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
-      { day: 'Friday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
-      { day: 'Saturday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
-      { day: 'Sunday', open: '', close: '', isClosed: true }
+      { day: 'Monday', openTime: '10:00 AM', closeTime: '6:00 PM' },
+      { day: 'Tuesday', openTime: '10:00 AM', closeTime: '6:00 PM' },
+      { day: 'Wednesday', openTime: '10:00 AM', closeTime: '6:00 PM' },
+      { day: 'Thursday', openTime: '10:00 AM', closeTime: '6:00 PM' },
+      { day: 'Friday', openTime: '10:00 AM', closeTime: '6:00 PM' },
+      { day: 'Saturday', openTime: '10:00 AM', closeTime: '6:00 PM' }
     ]
   },
   {
@@ -119,13 +116,13 @@ export const stores: Store[] = [
     email: "sales@empiregoldexchange.com",
     website: "https://empiregoldexchange.com",
     hours: [
-      { day: 'Monday', open: '9:00 AM', close: '7:00 PM', isClosed: false },
-      { day: 'Tuesday', open: '9:00 AM', close: '7:00 PM', isClosed: false },
-      { day: 'Wednesday', open: '9:00 AM', close: '7:00 PM', isClosed: false },
-      { day: 'Thursday', open: '9:00 AM', close: '7:00 PM', isClosed: false },
-      { day: 'Friday', open: '9:00 AM', close: '7:00 PM', isClosed: false },
-      { day: 'Saturday', open: '10:00 AM', close: '6:00 PM', isClosed: false },
-      { day: 'Sunday', open: '11:00 AM', close: '5:00 PM', isClosed: false }
+      { day: 'Monday', openTime: '9:00 AM', closeTime: '7:00 PM' },
+      { day: 'Tuesday', openTime: '9:00 AM', closeTime: '7:00 PM' },
+      { day: 'Wednesday', openTime: '9:00 AM', closeTime: '7:00 PM' },
+      { day: 'Thursday', openTime: '9:00 AM', closeTime: '7:00 PM' },
+      { day: 'Friday', openTime: '9:00 AM', closeTime: '7:00 PM' },
+      { day: 'Saturday', openTime: '10:00 AM', closeTime: '6:00 PM' },
+      { day: 'Sunday', openTime: '11:00 AM', closeTime: '5:00 PM' }
     ]
   },
   {
@@ -140,13 +137,12 @@ export const stores: Store[] = [
     email: "info@royalgoldnyc.com",
     website: "https://royalgoldnyc.com",
     hours: [
-      { day: 'Monday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
-      { day: 'Tuesday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
-      { day: 'Wednesday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
-      { day: 'Thursday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
-      { day: 'Friday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
-      { day: 'Saturday', open: '11:00 AM', close: '8:00 PM', isClosed: false },
-      { day: 'Sunday', open: '', close: '', isClosed: true }
+      { day: 'Monday', openTime: '11:00 AM', closeTime: '8:00 PM' },
+      { day: 'Tuesday', openTime: '11:00 AM', closeTime: '8:00 PM' },
+      { day: 'Wednesday', openTime: '11:00 AM', closeTime: '8:00 PM' },
+      { day: 'Thursday', openTime: '11:00 AM', closeTime: '8:00 PM' },
+      { day: 'Friday', openTime: '11:00 AM', closeTime: '8:00 PM' },
+      { day: 'Saturday', openTime: '11:00 AM', closeTime: '8:00 PM' },
     ]
   }
 ];
@@ -154,133 +150,131 @@ export const stores: Store[] = [
 export const products: Product[] = [
   // Store 1 Products (Gold & Diamond District)
   {
-    productId: '1',
+    productId: 1,
     storeId: '1',
-    price: 1299.99,
-    purity: 18,
-    style: "Cable",
-    thickness: "2 mm",
-    length: "20 in",
-    color: "Yellow",
-    weight: 12.5
+    set_price: 1299.99,
+    chain_purity: "18K",
+    chain_type: "Cable",
+    chain_thickness: 2,
+    chain_length: 20,
+    chain_color: "Yellow",
+    chain_weight: 12.5
   },
   {
-    productId: '4',
+    productId: 4,
     storeId: '1',
-    price: 899.99,
-    purity: 14,
-    style: "Rope",
-    thickness: "2.5 mm",
-    length: "22 in",
-    color: "White",
-    weight: 15.8
+    set_price: 899.99,
+    chain_purity: "14K",
+    chain_type: "Rope",
+    chain_thickness: 2.5,
+    chain_length: 22,
+    chain_color: "White",
+    chain_weight: 15.8
   },
   {
-    productId: '5',
+    productId: 5,
     storeId: '1',
-    price: 2199.99,
-    purity: 22,
-    style: "Byzantine",
-    thickness: "3.5 mm",
-    length: "24 in",
-    color: "Yellow",
-    weight: 20.3
+    set_price: 2199.99,
+    chain_purity: "22K",
+    chain_type: "Byzantine",
+    chain_thickness: 3.5,
+    chain_length: 24,
+    chain_color: "Yellow",
+    chain_weight: 20.3
   },
 
   // Store 2 Products (Empire Gold Exchange)
   {
-    productId: '2',
+    productId: 2,
     storeId: '2',
-    price: 2499.99,
-    purity: 14,
-    style: "Miami Cuban",
-    thickness: "4 mm",
-    length: "24 in",
-    color: "Rose",
-    weight: 25.7,
-    productUrl: "https://empiregoldexchange.com/products/miami-cuban-rose-gold"
+    set_price: 2499.99,
+    chain_purity: "14K",
+    chain_type: "Miami Cuban",
+    chain_thickness: 4,
+    chain_length: 24,
+    chain_color: "Rose",
+    chain_weight: 25.7
   },
   {
-    productId: '6',
+    productId: 6,
     storeId: '2',
-    price: 1599.99,
-    purity: 18,
-    style: "Franco",
-    thickness: "3 mm",
-    length: "20 in",
-    color: "Two-Color",
-    weight: 18.2
+    set_price: 1599.99,
+    chain_purity: "18K",
+    chain_type: "Franco",
+    chain_thickness: 3,
+    chain_length: 20,
+    chain_color: "Two-Color",
+    chain_weight: 18.2
   },
   {
-    productId: '7',
+    productId: 7,
     storeId: '2',
-    price: 3499.99,
-    purity: 22,
-    style: "Box",
-    thickness: "5 mm",
-    length: "26 in",
-    color: "Yellow",
-    weight: 30.5
+    set_price: 3499.99,
+    chain_purity: "22K",
+    chain_type: "Box",
+    chain_thickness: 5,
+    chain_length: 26,
+    chain_color: "Yellow",
+    chain_weight: 30.5
   },
 
   // Store 3 Products (Royal Gold & Jewelry)
   {
-    productId: '3',
+    productId: 3,
     storeId: '3',
-    price: 1899.99,
-    purity: 22,
-    style: "Franco",
-    thickness: "3 mm",
-    length: "18 in",
-    color: "Two-Color",
-    weight: 17.4,
-    productUrl: "https://royalgoldnyc.com/products/franco-two-tone-chain"
+    set_price: 1899.99,
+    chain_purity: "22K",
+    chain_type: "Franco",
+    chain_thickness: 3,
+    chain_length: 18,
+    chain_color: "Two-Color",
+    chain_weight: 17.4
   },
   {
-    productId: '8',
+    productId: 8,
     storeId: '3',
-    price: 799.99,
-    purity: 10,
-    style: "Figaro",
-    thickness: "2 mm",
-    length: "20 in",
-    color: "Yellow",
-    weight: 10.1
+    set_price: 799.99,
+    chain_purity: "10K",
+    chain_type: "Figaro",
+    chain_thickness: 2,
+    chain_length: 20,
+    chain_color: "Yellow",
+    chain_weight: 10.1
   },
   {
-    productId: '9',
+    productId: 9,
     storeId: '3',
-    price: 2899.99,
-    purity: 24,
-    style: "Mariner",
-    thickness: "4 mm",
-    length: "22 in",
-    color: "Rose",
-    weight: 27.8
+    set_price: 2899.99,
+    chain_purity: "24K",
+    chain_type: "Mariner",
+    chain_thickness: 4,
+    chain_length: 22,
+    chain_color: "Rose",
+    chain_weight: 27.8
   },
 
   // Additional products for Store 3 (Royal Gold & Jewelry)
   {
-    productId: '10',
+    productId: 10,
     storeId: '3',
-    price: 1499.99,
-    purity: 18,
-    style: "Herringbone",
-    thickness: "3 mm",
-    length: "20 in",
-    color: "White",
-    weight: 16.3
+    set_price: 1499.99,
+    chain_purity: "18K",
+    chain_type: "Herringbone",
+    chain_thickness: 3,
+    chain_length: 20,
+    chain_color: "White",
+    chain_weight: 16.3
   },
   {
-    productId: '11',
+    productId: 11,
     storeId: '3',
-    price: 2299.99,
-    purity: 14,
-    style: "Miami Cuban",
-    thickness: "4.5 mm",
-    length: "24 in",
-    color: "Two-Color",
-    weight: 28.4
+    set_price: 2299.99,
+    chain_purity: "14K",
+    chain_type: "Miami Cuban",
+    chain_thickness: 4.5,
+    chain_length: 24,
+    chain_color: "Two-Color",
+    chain_weight: 28.4
   }
 ];
 
@@ -289,7 +283,7 @@ export const products: Product[] = [
 // --------------------
 
 export const getFormattedProductName = (product: Product): string => {
-  return `${product.purity}K ${product.color} Gold ${product.style} Chain • ${product.thickness} & ${product.length}`.trim();
+  return `${product.chain_purity} ${product.chain_color} Gold ${product.chain_type} Chain • ${product.chain_thickness}mm & ${product.chain_length}in`.trim();
 };
 
 export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
@@ -298,18 +292,21 @@ export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
+  // Find if the current day exists in store hours
   const todayHours = hours.find(h => h.day === day);
-  if (!todayHours || todayHours.isClosed) {
-    return { isOpen: false, nextChange: 'Currently Closed' };
+
+  // If this day isn't listed in hours, store is closed
+  if (!todayHours) {
+    return { isOpen: false, nextChange: 'Closed on ' + day };
   }
 
-  const openTime = parseTimeString(todayHours.open);
-  const closeTime = parseTimeString(todayHours.close);
+  const openTime = parseTimeString(todayHours.openTime);
+  const closeTime = parseTimeString(todayHours.closeTime);
   const currentTime = currentHour * 60 + currentMinute;
 
   const isOpen = currentTime >= openTime && currentTime < closeTime;
   const nextChange = isOpen 
-    ? `Closes at ${todayHours.close}` 
+    ? `Closes at ${todayHours.closeTime}` 
     : 'Currently Closed';
 
   return { isOpen, nextChange };
