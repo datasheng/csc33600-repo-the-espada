@@ -10,7 +10,9 @@ import {
   fetchStores,
   fetchProducts,
   getStoreStatus, 
-  getFormattedProductName
+  getFormattedProductName,
+  fetchStoreHours,
+  StoreHours
 } from '../../data/stores';
 import styles from './ProductPage.module.css';
 import { StarRating } from '@/app/components/StarRating';
@@ -19,9 +21,10 @@ import { motion } from 'framer-motion';
 const ProductPage = () => {
   const [store, setStore] = useState<Store | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
+  const [hours, setHours] = useState<StoreHours[]>([]);  // Changed from any | null
   const [error, setError] = useState<string | null>(null);
   const params = useParams();
-  const productId = parseInt(params.id as string, 10); // Convert to number since productId is now INTEGER
+  const productID = parseInt(params.id as string, 10);
   const router = useRouter();
 
   useEffect(() => {
@@ -29,24 +32,28 @@ const ProductPage = () => {
       try {
         // Get all products first
         const products = await fetchProducts();
-        const productData = products.find(p => p.productId === productId);
+        const productData = products.find(p => p.productID === productID);  // Changed from productId
         
         if (!productData) {
           setError('Product not found');
           return;
         }
 
-        // Then get the store info
+        // Then get the store info and hours
         const stores = await fetchStores();
-        const storeData = stores.find(s => s.id === productData.storeId);
+        const storeData = stores.find(s => s.storeID === productData.storeID);  // Changed from id/storeId
 
         if (!storeData) {
           setError('Store not found');
           return;
         }
 
+        // Fetch store hours
+        const hoursData = await fetchStoreHours(storeData.storeID);
+
         setProduct(productData);
         setStore(storeData);
+        setHours(hoursData);
       } catch (err) {
         console.error('Error loading data:', err);
         setError('Error loading data');
@@ -54,7 +61,7 @@ const ProductPage = () => {
     };
 
     loadData();
-  }, [productId]);
+  }, [productID]);
 
   if (error) {
     return (
@@ -84,7 +91,8 @@ const ProductPage = () => {
     );
   }
 
-  const { isOpen, nextChange } = getStoreStatus(store.hours);
+  // Update the getStoreStatus call to use the hours state instead of store.hours
+  const { isOpen, nextChange } = getStoreStatus(hours);
 
   return (
     <div className="min-h-screen bg-white">
@@ -98,14 +106,30 @@ const ProductPage = () => {
                 {getFormattedProductName(product)}
               </h1>
               <h2 className="text-2xl text-white mb-2 opacity-90">
-                {store.name}
+                {store.store_name}  {/* Changed from name */}
               </h2>
               <div className="mb-2">
-                <StarRating rating={store.rating} numReviews={store.numReviews} size="medium" />
+                <StarRating 
+                  rating={store.rating} 
+                  size="medium"
+                  // Removed numReviews prop as it's not in Store interface
+                />
               </div>
               <p className="text-gray-400">
                 {store.address}
               </p>
+              
+              {/* Store Hours Status */}
+              <div className="mt-4">
+                <div className="flex items-center gap-2">
+                  <span className={`${styles.statusDot} ${isOpen ? styles.open : styles.closed}`} />
+                  <span className="text-white">
+                    {isOpen ? 'Open' : 'Closed'}
+                  </span>
+                  <span className="text-gray-400 mx-2">•</span>
+                  <span className="text-gray-400">{nextChange}</span>
+                </div>
+              </div>
             </div>
 
             {/* Product Details */}
@@ -131,7 +155,7 @@ const ProductPage = () => {
             <div className="mt-6">
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
-                  href={`/stores/${store.id}`}
+                  href={`/stores/${store.storeID}`}
                   className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors"
                 >
                   View Store Details
@@ -139,7 +163,7 @@ const ProductPage = () => {
                 <Link
                   href={{
                     pathname: '/map',
-                    query: { storeId: store.id }
+                    query: { storeID: store.storeID }
                   }}
                   className="bg-[#FFD700] text-black px-6 py-3 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
                 >

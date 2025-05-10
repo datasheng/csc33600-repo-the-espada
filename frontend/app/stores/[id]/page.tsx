@@ -8,7 +8,9 @@ import { StarRating } from '@/app/components/StarRating';
 import { 
   Store, 
   Product,
+  StoreHours,
   fetchStores,
+  fetchStoreHours,
   fetchProducts,
   getStoreStatus, 
   getFormattedProductName
@@ -34,25 +36,34 @@ const DAYS_OF_WEEK = [
   'Friday', 'Saturday', 'Sunday'
 ];
 
-const StoreContent = ({ store, products }: { store: Store, products: Product[] }) => {
-  const { isOpen, nextChange } = getStoreStatus(store.hours);
+const StoreContent: React.FC<{ 
+  store: Store; 
+  hours: StoreHours[]; 
+  products: Product[]; 
+}> = ({ store, hours, products }) => {
+  const { isOpen, nextChange } = getStoreStatus(hours);
 
   return (
     <div className="bg-black rounded-lg p-8 shadow-xl">
       {/* Store Header */}
       <div className="mb-8">
         <h1 className="text-4xl text-[#FFD700] font-bold mb-4 tracking-tight">
-          {store.name}
+          {store.store_name}
         </h1>
         
         <div className="mb-6">
-          <StarRating rating={store.rating} numReviews={store.numReviews} size="large" />
+          <StarRating 
+            rating={store.rating} 
+            size="large"
+            // numReviews={store.numReviews}  // To be implemented in the future
+          />
         </div>
 
         {/* Contact Information */}
         <div className="space-y-3 mb-8">
+          {/* Changed from lat/lng */}
           <a 
-            href={`https://maps.google.com/?q=${store.lat},${store.lng}`}
+            href={`https://maps.google.com/?q=${store.latitude},${store.longitude}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
@@ -99,7 +110,7 @@ const StoreContent = ({ store, products }: { store: Store, products: Product[] }
           {/* Business Hours */}
           <div className="space-y-2 mb-6">
             {DAYS_OF_WEEK.map((day) => {
-              const hourData = store.hours.find(h => h.day === day);
+              const hourData = hours.find(h => h.day === day);
               return (
                 <div key={day} className="flex justify-between">
                   <span className="text-gray-400 w-24 text-base font-medium">
@@ -117,20 +128,10 @@ const StoreContent = ({ store, products }: { store: Store, products: Product[] }
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-4">
-            {store.website && (
-              <a
-                href={store.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-[#e72114] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#d41f13] transition-colors w-full text-center"
-              >
-                Visit Store Website
-              </a>
-            )}
             <Link
               href={{
                 pathname: '/map',
-                query: { storeId: store.id }
+                query: { storeId: store.storeID }
               }}
               className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors w-full text-center"
             >
@@ -146,7 +147,7 @@ const StoreContent = ({ store, products }: { store: Store, products: Product[] }
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
             <motion.div
-              key={product.productId}
+              key={product.productID}
               className="bg-white/10 rounded-lg p-6 hover:bg-white/15 transition-colors"
               whileHover={{ scale: 1.02 }}
             >
@@ -159,7 +160,7 @@ const StoreContent = ({ store, products }: { store: Store, products: Product[] }
                   ${product.set_price.toLocaleString()}
                 </span>
                 <Link
-                  href={`/products/${product.productId}`}
+                  href={`/products/${product.productID}`}
                   className="bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
                 >
                   View Product
@@ -173,32 +174,38 @@ const StoreContent = ({ store, products }: { store: Store, products: Product[] }
   );
 };
 
-const StorePage = () => {
+const StorePage: React.FC = () => {
   const [store, setStore] = useState<Store | null>(null);
+  const [hours, setHours] = useState<StoreHours[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const params = useParams();
   const storeId = params.id as string;
-  const router = useRouter();
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const [stores, allProducts] = await Promise.all([
-          fetchStores(),
-          fetchProducts()
-        ]);
+        // Fetch store data
+        const stores = await fetchStores();
+        const storeData = stores.find(s => s.storeID.toString() === storeId);
         
-        const storeData = stores.find(s => s.id === storeId);
         if (!storeData) {
           setError('Store not found');
           return;
         }
 
-        const storeProducts = allProducts.filter(p => p.storeId === storeId);
+        // Fetch hours and products
+        const [hoursData, productsData] = await Promise.all([
+          fetchStoreHours(storeData.storeID),
+          fetchProducts()
+        ]);
+
+        const storeProducts = productsData.filter(p => p.storeID === storeData.storeID);
+        
         setStore(storeData);
+        setHours(hoursData);
         setProducts(storeProducts);
       } catch (err) {
         console.error('Error loading data:', err);
@@ -221,8 +228,8 @@ const StorePage = () => {
               <LoadingState />
             ) : error ? (
               <div className="text-center text-red-600">{error}</div>
-            ) : store && products ? (
-              <StoreContent store={store} products={products} />
+            ) : store && hours && products ? (
+              <StoreContent store={store} hours={hours} products={products} />
             ) : null}
           </Suspense>
         </div>

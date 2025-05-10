@@ -4,11 +4,15 @@ import styles from './StarRating.module.css';
 
 interface StarRatingProps {
   rating: number;
-  numReviews: number;
   size?: 'small' | 'medium' | 'large';
+  // numReviews: number;  // Commented out for future implementation
 }
 
-export const StarRating: React.FC<StarRatingProps> = ({ rating, numReviews, size = 'medium' }) => {
+export const StarRating: React.FC<StarRatingProps> = ({ 
+  rating, 
+  // numReviews,  // Commented out for future implementation
+  size = 'medium' 
+}) => {
   return (
     <div className={`${styles.starRating} ${styles[size]}`}>
       <span className={styles.ratingNumber}>{rating.toFixed(1)}</span>
@@ -33,7 +37,9 @@ export const StarRating: React.FC<StarRatingProps> = ({ rating, numReviews, size
           );
         })}
       </div>
+      {/* Commented out for future implementation
       <span className={styles.reviewCount}>({numReviews})</span>
+      */}
     </div>
   );
 };

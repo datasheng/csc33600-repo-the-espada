@@ -1,4 +1,30 @@
-from flask import Blueprint, request, jsonify
-from db import get_db_connection
+from flask import Blueprint, jsonify, request
+from controllers.product_controller import ProductController
 
 product_bp = Blueprint('product_bp', __name__)
+product_controller = ProductController()
+
+@product_bp.route('/api/products', methods=['GET'])
+def get_products():
+    try:
+        store_id = request.args.get('storeID')
+        if store_id:
+            store_id = int(store_id)
+            products = product_controller.get_products_by_store(store_id)
+        else:
+            products = product_controller.get_all_products()
+        return jsonify(products)
+    except Exception as e:
+        print(f"Error getting products: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@product_bp.route('/api/products/<int:product_id>', methods=['GET'])
+def get_product(product_id):
+    try:
+        product = product_controller.get_product_by_id(product_id)
+        if product is None:
+            return jsonify({"error": "Product not found"}), 404
+        return jsonify(product)
+    except Exception as e:
+        print(f"Error getting product: {e}")
+        return jsonify({"error": str(e)}), 500

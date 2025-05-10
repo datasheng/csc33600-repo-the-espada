@@ -11,6 +11,7 @@ import { motion } from "framer-motion"
 import { 
   fetchStores,
   fetchProducts,
+  fetchStoreHours,
   getStoreStatus, 
   CHAIN_TYPES,
   CHAIN_COLORS,
@@ -32,8 +33,9 @@ import { useRouter } from 'next/navigation';
 
 import CustomListbox from '../components/CustomListbox';
 
+// Update CustomMarker interface to use storeID instead of id
 interface CustomMarker extends Marker {
-  storeId?: string;
+  storeID?: number;  // Changed from string to number to match database
 }
 
 const isValidIcon = (icon: Icon | null): icon is Icon => {
@@ -75,7 +77,7 @@ const MapComponent: React.FC = () => {
   });
   const [map, setMap] = useState<LeafletMap | null>(null);
   const [markers, setMarkers] = useState<CustomMarker[]>([]);
-  const [selectedStore, setSelectedStore] = useState<string | null>(null);
+  const [selectedStore, setSelectedStore] = useState<number | null>(null);  // Changed from string to number
   const [showResults, setShowResults] = useState(false);
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
   const [clickCount, setClickCount] = useState<{ [key: string]: number }>({});
@@ -118,6 +120,8 @@ const MapComponent: React.FC = () => {
 
   // Add new state for selected product ID
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+
+  const [hours, setHours] = useState<StoreHours[]>([]);
 
   // Add useEffect for map initialization to prevent SSR issues
   useEffect(() => {
@@ -217,7 +221,7 @@ const MapComponent: React.FC = () => {
     if (value === "") {
       // Reset to original order
       sortedProducts = [...products].filter(p => 
-        filteredProducts.some(fp => fp.productId === p.productId)
+        filteredProducts.some(fp => fp.productID === p.productID)
       );
     } else {
       sortedProducts.sort((a, b) => {
@@ -252,16 +256,16 @@ const MapComponent: React.FC = () => {
   };
 
   // Update handleStoreClick to include productId
-  const handleStoreClick = async (storeId: string, productId: number) => {
-    const store = stores.find(s => s.id === storeId);
+  const handleStoreClick = async (storeID: number, productID: number) => {
+    const store = stores.find(s => s.storeID === storeID);
     if (!store || !map || !isValidIcon(selectedGoldIcon)) {
       console.error('Missing required data:', { store, map, selectedGoldIcon });
       return;
     }
   
-    map.setView([store.lat, store.lng], 15);
-  
-    // Reset all markers
+    map.setView([store.latitude, store.longitude], 15);  // Changed from lat/lng
+    
+    // Update marker handling
     markers.forEach(marker => {
       if (isValidIcon(goldIcon)) {
         marker.setIcon(goldIcon);
@@ -269,19 +273,17 @@ const MapComponent: React.FC = () => {
       }
     });
   
-    // Update selected marker
-    const selectedMarker = markers.find(marker => marker.storeId === storeId);
+    const selectedMarker = markers.find(marker => marker.storeID === storeID);
     if (selectedMarker) {
       selectedMarker.setIcon(selectedGoldIcon);
       selectedMarker.setZIndexOffset(1000);
       bounceMarker(selectedMarker);
     }
   
-    // Update states
-    setSelectedStore(storeId);
+    setSelectedStore(storeID);
     setSelectedStoreData(store);
-    setSelectedProduct(products.find(p => p.productId === productId) || null);
-    setSelectedProductId(productId);
+    setSelectedProduct(products.find(p => p.productID === productID) || null);
+    setSelectedProductId(productID);
     setShowExtendedInfo(true);
   };
 
@@ -413,27 +415,27 @@ const MapComponent: React.FC = () => {
         setFilteredProducts(filtered);
 
         // Get unique store IDs from filtered products
-        const storeIds = [...new Set(filtered.map(p => p.storeId))];
-        const filteredStores = stores.filter(s => storeIds.includes(s.id));
+        const storeIds = [...new Set(filtered.map(p => p.storeID))];
+        const filteredStores = stores.filter(s => storeIds.includes(s.storeID)); // Changed from s.id
         setFilteredStores(filteredStores);
 
         // Create markers for filtered stores with proper icon selection
         const newMarkers = filteredStores.map(store => {
-          const marker = L.marker([store.lat, store.lng], { 
-            icon: store.id === selectedStore ? selectedGoldIcon : goldIcon 
+          const marker = L.marker([store.latitude, store.longitude], {  // Changed from lat/lng
+            icon: store.storeID === selectedStore ? selectedGoldIcon : goldIcon 
           }) as CustomMarker;
           
-          marker.storeId = store.id;
+          marker.storeID = store.storeID;  // Changed from id
           
-          if (store.id === selectedStore) {
+          if (store.storeID === selectedStore) {
             marker.setZIndexOffset(1000);
           }
           
           // Update marker click handler to find first product for the store
           marker.on('click', () => {
-            const firstProduct = products.find(p => p.storeId === store.id);
+            const firstProduct = products.find(p => p.storeID === store.storeID);
             if (firstProduct) {
-              handleStoreClick(store.id, firstProduct.productId);
+              handleStoreClick(store.storeID, firstProduct.productID);
             }
           });
           
@@ -454,7 +456,7 @@ const MapComponent: React.FC = () => {
   const initView = useCallback(async (storeId: string | null) => {
     if (!storeId || !stores.length || !map || !markers.length) return;
   
-    const store = stores.find(s => s.id === storeId);
+    const store = stores.find(s => s.storeID === parseInt(storeId)); // Convert string to number
     if (!store) return;
   
     // Reset filters
@@ -474,34 +476,33 @@ const MapComponent: React.FC = () => {
     });
   
     // Find and update target marker
-    const targetMarker = markers.find(m => m.storeId === storeId);
+    const targetMarker = markers.find(m => m.storeID === parseInt(storeId));  // Convert string to number
     if (targetMarker && isValidIcon(selectedGoldIcon)) {
       targetMarker.setIcon(selectedGoldIcon);
       bounceMarker(targetMarker);
     }
   
-    // Update view and state
-    map.setView([store.lat, store.lng], 15);
-    setSelectedStore(storeId);
+    // Update view and state with correct property names
+    map.setView([store.latitude, store.longitude], 15);
+    setSelectedStore(parseInt(storeId));  // Convert string to number
     setSelectedStoreData(store);
     setShowExtendedInfo(true);
-    // Remove setShowResults(true) - we don't want to show the results list
   }, [stores, map, markers, goldIcon, selectedGoldIcon]);
   
   // Remove the duplicate URL parameter handlers and combine into one
   useEffect(() => {
-    const storeId = searchParams.get('storeId');
+    const storeID = searchParams.get('storeID');
     
-    // Skip if no storeId or if it's already selected
-    if (!storeId || selectedStore === storeId) return;
+    // Skip if no storeID or if it's already selected
+    if (!storeID || selectedStore === parseInt(storeID)) return;
     
     const handleStoreSelection = async () => {
       if (stores.length > 0 && map && markers.length > 0) {
-        const store = stores.find(s => s.id === storeId);
+        const store = stores.find(s => s.storeID === parseInt(storeID));
         if (!store) return;
   
         // Get store products
-        const storeProducts = products.filter(p => p.storeId === storeId);
+        const storeProducts = products.filter(p => p.storeID === parseInt(storeID));
         const firstMatchingProduct = storeProducts[0] || null;
   
         // Reset all markers first
@@ -513,27 +514,33 @@ const MapComponent: React.FC = () => {
         });
   
         // Update selected marker
-        const targetMarker = markers.find(m => m.storeId === storeId);
+        const targetMarker = markers.find(m => m.storeID === parseInt(storeID));
         if (targetMarker && isValidIcon(selectedGoldIcon)) {
           targetMarker.setIcon(selectedGoldIcon);
-          targetMarker.setZIndexOffset(1000); // Bring selected marker to front
+          targetMarker.setZIndexOffset(1000);
           bounceMarker(targetMarker);
         }
   
-        // Set view and update state
-        map.setView([store.lat, store.lng], 15);
-        setSelectedStore(storeId);
+        // Set view with correct property names
+        map.setView([store.latitude, store.longitude], 15);
+        setSelectedStore(parseInt(storeID));
         setSelectedStoreData(store);
         setSelectedProduct(firstMatchingProduct);
         setShowExtendedInfo(true);
   
-        // Clear URL parameter
         window.history.replaceState({}, '', '/map');
       }
     };
   
     handleStoreSelection();
   }, [searchParams, stores, map, markers, goldIcon, selectedGoldIcon, products]);
+
+  // Fetch hours when store is selected
+  useEffect(() => {
+    if (selectedStoreData) {
+      fetchStoreHours(selectedStoreData.storeID).then(setHours);
+    }
+  }, [selectedStoreData]);
 
   return (
     <>
@@ -748,21 +755,21 @@ const MapComponent: React.FC = () => {
                 return 0;
               })
               .map((product) => {
-                const store = stores.find(s => s.id === product.storeId);
+                const store = stores.find(s => s.storeID === product.storeID); // Changed from s.id
                 if (!store) return null;
                 
                 return (
                   <div 
-                    key={product.productId} 
-                    className={`${styles.productCard} ${selectedProductId === product.productId ? styles.selected : ''}`}
-                    onClick={() => handleStoreClick(store.id, product.productId)}
+                    key={product.productID} // Changed from productId
+                    className={`${styles.productCard} ${selectedProductId === product.productID ? styles.selected : ''}`}
+                    onClick={() => handleStoreClick(store.storeID, product.productID)}
                   >
                     <div className={styles.productInfo}>
                       <p className={styles.productName}>
                         {getFormattedProductName(product)}
                       </p>
                       <p className={styles.storeName}>
-                        {store.name}
+                        {store.store_name} {/* Changed from name */}
                       </p>
                       <p className={styles.productPrice}>
                         ${product.set_price.toLocaleString()}
@@ -771,7 +778,7 @@ const MapComponent: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        router.push(`/products/${product.productId.toString()}`);
+                        router.push(`/products/${product.productID.toString()}`);
                       }}
                       className={styles.viewProductButton}
                     >
@@ -796,13 +803,13 @@ const MapComponent: React.FC = () => {
             </button>
             
             <h3 className="text-2xl text-white mb-4 opacity-90">
-              {selectedStoreData.name}
+              {selectedStoreData.store_name}
             </h3>
             
             <StarRating 
               rating={selectedStoreData.rating} 
-              numReviews={selectedStoreData.numReviews} 
               size="large" 
+              // Remove numReviews as it's not in the Store interface
             />
             
             <p className={styles.address}>{selectedStoreData.address}</p>
@@ -813,13 +820,13 @@ const MapComponent: React.FC = () => {
                 onClick={() => setShowHours(!showHours)}
               >
                 <div className={styles.statusInfo}>
-                  <span className={`${styles.statusDot} ${getStoreStatus(selectedStoreData.hours).isOpen ? styles.open : styles.closed}`} />
+                  <span className={`${styles.statusDot} ${getStoreStatus(hours).isOpen ? styles.open : styles.closed}`} />
                   <span className={styles.statusText}>
-                    {getStoreStatus(selectedStoreData.hours).isOpen ? 'Open' : 'Closed'}
+                    {getStoreStatus(hours).isOpen ? 'Open' : 'Closed'}
                   </span>
                   <span className={styles.statusBullet}>•</span>
                   <span className={styles.nextChange}>
-                    {getStoreStatus(selectedStoreData.hours).nextChange}
+                    {getStoreStatus(hours).nextChange}
                   </span>
                 </div>
                 <span className={`${styles.dropdownArrow} ${showHours ? styles.open : ''}`}>▼</span>
@@ -828,7 +835,7 @@ const MapComponent: React.FC = () => {
               {showHours && (
                 <div className={styles.hoursDropdown}>
                   {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
-                    const hourData = selectedStoreData.hours.find(h => h.day === day);
+                    const hourData = hours.find(h => h.day === day);
                     return (
                       <div key={day} className={styles.hourRow}>
                         <span className={styles.dayName}>{day}</span>
@@ -847,7 +854,7 @@ const MapComponent: React.FC = () => {
             {/* Action Buttons */}
             <div className={styles.actionButtons}>
               <a 
-                href={`https://maps.google.com/?q=${selectedStoreData.lat},${selectedStoreData.lng}`}
+                href={`https://maps.google.com/?q=${selectedStoreData.latitude},${selectedStoreData.longitude}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.directionsButton}
@@ -855,7 +862,10 @@ const MapComponent: React.FC = () => {
                 Get Directions
               </a>
               <Link
-                href={`/stores/${selectedStoreData.id}`} // Changed from /products/ to /stores/
+                href={{
+                  pathname: '/map',
+                  query: { storeID: selectedStoreData.storeID } // Changed from storeId
+                }}
                 className={styles.detailsButton}
               >
                 View Store Details

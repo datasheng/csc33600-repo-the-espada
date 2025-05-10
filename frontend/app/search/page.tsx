@@ -112,6 +112,7 @@ const SearchPage: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Update product filtering to use correct property names
     const filtered = products.filter(product => {
       if (filters.goldPurity && product.chain_purity !== filters.goldPurity) return false;
       if (filters.chainStyle && product.chain_type !== filters.chainStyle) return false;
@@ -339,11 +340,11 @@ const SearchPage: React.FC = () => {
                     return 0;
                   })
                   .map((product) => {
-                    const store = stores.find(s => s.id === product.storeId);
+                    const store = stores.find(s => s.storeID === product.storeID); // Changed from id/storeId
                     if (!store) return null;
                     return (
                       <motion.div
-                        key={product.productId}
+                        key={product.productID} // Changed from productId
                         className="bg-white/10 rounded-lg p-6 hover:bg-white/15 transition-colors"
                       >
                         <div className="flex justify-between items-start">
@@ -352,22 +353,26 @@ const SearchPage: React.FC = () => {
                               {getFormattedProductName(product)}
                             </h2>
                             <Link 
-                              href={`/stores/${store.id}`}
+                              href={`/stores/${store.storeID}`} // Changed from id
                               className="text-xl font-bold text-[#FFD700] mb-2 italic hover:text-[#e6c200] transition-colors inline-block"
                             >
-                              {store.name}
+                              {store.store_name} {/* Changed from name */}
                             </Link>
                             <p className="text-gray-400 text-sm mb-2">
                               {store.address}
                             </p>
-                            <StarRating rating={store.rating} numReviews={store.numReviews} size="medium" />
+                            <StarRating 
+                              rating={store.rating} 
+                              size="medium"
+                              // Removed numReviews as it's not in Store interface
+                            />
                           </div>
                           <div className="text-right flex flex-col items-end gap-4">
                             <div className="text-3xl font-bold text-[#FFD700]">
                               ${product.set_price.toLocaleString()}
                             </div>
                             <button
-                              onClick={() => router.push(`/products/${product.productId}`)}
+                              onClick={() => router.push(`/products/${product.productID}`)} // Changed from productId
                               className="bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
                             >
                               View Details
