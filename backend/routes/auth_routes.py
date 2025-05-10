@@ -1,3 +1,4 @@
+import pymysql.cursors
 from flask import Blueprint, request, jsonify, session
 from db import get_db_connection
 
@@ -13,9 +14,11 @@ def login():
         if not email or not password:
             return jsonify({'message': 'Email and password are required'}), 400
 
-        connection = get_db_connection()
-        if connection is None:
+        database = get_db_connection()
+        if database is None:
             return jsonify({'message': 'Database connection failed'}), 500
+
+        connection = database.cursor(pymysql.cursors.DictCursor)
 
         # Check if user exists
         connection.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -23,7 +26,7 @@ def login():
         print(f"User fetched from database: {user}")
 
         if not user:
-            return jsonify({'message': 'Incorrect email and password'}), 404
+            return jsonify({'message': 'User not found'}), 404
 
         print(f"Stored password: {user['user_password']}, Provided password: {password}")
 
@@ -45,4 +48,3 @@ def login():
 def logout():
     session.clear()
     return jsonify({'message': 'Logged out'})
-
