@@ -1,8 +1,47 @@
 "use client"
 import Header from '../components/Header';
-import Footer from '../components/Footer'
+import Footer from '../components/Footer';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { useState } from 'react';
 
 export default function Login() {
+    const [data, setData] = useState({ email: "", password: "" });
+    const [response, setResponse] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+
+    const handleChange = (e: any) =>{
+        const {name, value} = e.target
+        setData((prevData) => ({
+            ...prevData,
+            [name]: value
+        }))
+    }
+    const handleSubmit = async (e: any) => {
+        e.preventDefault() //stops default form submission
+        const userData = {
+            email: data.email,
+            password: data.password,
+        };
+
+        try {
+            const response = await axios.post("http://127.0.0.1:5000/login", userData, {
+                withCredentials: true,
+            });
+
+            //setResponse(response.data.message);
+            setError(null);
+            console.log(response.status, response.data.message);
+
+            router.push("/"); //goes to home page after successful login
+        } catch (err: any) {
+            console.error(err);
+            setError(err.response?.data?.message || "An error occurred");
+            setResponse(null);
+        }
+    };
+
     return (
         <>
             <Header />
@@ -11,16 +50,16 @@ export default function Login() {
                 <div className='relative bg-[url("/hero-background.jpg")] bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center p-4'>
                 <div className="absolute inset-0 bg-white/70 z-0"></div>
 
-                        <div className=" relative bg-black/70 text-black px-8 py-6 rounded-lg border border-solid border-yellow-400 border-10">
+                        <div className=" relative bg-black/70 text-white px-8 py-6 rounded-lg border border-solid border-yellow-400 border-10">
                             <h1 className="font-bold py-2 text-center mb-2 text-2xl text-yellow-400">Login</h1>
-                            <form action="/login">
+                            <form onSubmit={handleSubmit}>
                                 <div className="mb-4">
                                     <label className="block mb-2">Email</label>
-                                    <input type="email" className="border border-solid text-black border-grey w-full" required></input>
+                                    <input type="email" name="email" value={data.email} onChange = {handleChange} className="border border-solid text-black border-grey w-full" required></input>
                                 </div>
                                 <div className="mb-4">
                                     <label className="block mb-2">Password</label>
-                                    <input type="password" className="border border-solid text-black border-grey w-full" required></input>
+                                    <input type="password" name="password" value={data.password} onChange = {handleChange} className="border border-solid text-black border-grey w-full" required></input>
                                 </div>
                                 <div className="flex justify-center">
                                     <button className="text-white rounded-lg border border-solid border-yellow-400  flex items-center 
@@ -29,6 +68,8 @@ export default function Login() {
                                     type="submit">Log In</button>
                                 </div>
                             </form>
+                            {response && <div className="text-green-500 mt-4">{response}</div>}
+                            {error && <div className="text-red-500 mt-4">{error}</div>}
                             <div className="text-center">
                             <p className="text-sm m-2">
                             Don’t have an account yet? <a href="/signup" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
