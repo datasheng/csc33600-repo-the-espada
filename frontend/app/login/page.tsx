@@ -27,17 +27,20 @@ export default function Login() {
         };
 
         try {
-            const response = await axios.post("http://127.0.0.1:5000/login", userData, {
+            const response = await axios.post("http://localhost:5000/api/login", userData, {
                 withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
-
+            
             setError(null);
             console.log(response.status, response.data.message);
             localStorage.setItem("isLoggedIn", "true");
             setIsLoggedIn(true);
             router.push("/"); //goes to home page after successful login
         } catch (err: any) {
-            console.error(err);
+            console.error("Login error:", err);
             setError(err.response?.data?.message || "An error occurred");
             setResponse(null);
         }

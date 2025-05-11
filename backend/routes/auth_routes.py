@@ -4,7 +4,7 @@ from db import get_db_connection
 
 auth_bp = Blueprint('auth_bp', __name__)
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/api/login', methods=['POST'])  # Changed from '/login' to '/api/login'
 def login():
     try:
         data = request.get_json()
@@ -44,7 +44,7 @@ def login():
         print(f"Error during login: {e}")
         return jsonify({'error': 'Failed to login'}), 500
 
-@auth_bp.route('/logout')
+@auth_bp.route('/api/logout')  # Changed from '/logout' to '/api/logout'
 def logout():
     session.clear()
     return jsonify({'message': 'Logged out'})
