@@ -22,3 +22,10 @@ Database: PostgreSQL – A robust relational database that efficiently handles s
     ```
     pip3 install -r requirements.txt
     ```
+Add a .env file in the backend and add this to it:
+
+SECRET_KEY = 'secret_key'
+MYSQL_HOST = 'localhost'
+MYSQL_USER = 'root'
+MYSQL_PASSWORD = '' #add password
+MYSQL_DB = '' #add database name
