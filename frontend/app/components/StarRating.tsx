@@ -1,45 +1,55 @@
 "use client"
 import { StarIcon } from '@heroicons/react/24/solid';
 import styles from './StarRating.module.css';
+import { useState } from 'react';
 
 interface StarRatingProps {
   rating: number;
   size?: 'small' | 'medium' | 'large';
-  // numReviews: number;  // Commented out for future implementation
+  onRatingSubmit?: (rating: number) => void;
+  readonly?: boolean;
 }
 
 export const StarRating: React.FC<StarRatingProps> = ({ 
   rating, 
-  // numReviews,  // Commented out for future implementation
-  size = 'medium' 
+  size = 'medium',
+  onRatingSubmit,
+  readonly = true
 }) => {
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+
+  const handleClick = (selectedRating: number) => {
+    if (!readonly && onRatingSubmit) {
+      onRatingSubmit(selectedRating);
+    }
+  };
+
   return (
     <div className={`${styles.starRating} ${styles[size]}`}>
-      <span className={styles.ratingNumber}>{rating.toFixed(1)}</span>
       <div className={styles.stars}>
-        {[...Array(5)].map((_, index) => {
-          const fillPercentage = Math.min(Math.max((rating - index) * 100, 0), 100);
-          return (
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span 
+            key={star}
+            className={`${styles.star} ${!readonly ? styles.interactive : ''}`}
+            onMouseEnter={() => !readonly && setHoverRating(star)}
+            onMouseLeave={() => !readonly && setHoverRating(null)}
+            onClick={() => handleClick(star)}
+          >
+            <span className={styles.starBackground}>★</span>
             <span 
-              key={index} 
-              className={styles.star}
+              className={styles.starFill}
+              style={{
+                width: `${Math.min(Math.max(((hoverRating || rating) - star + 1) * 100, 0), 100)}%`
+              }}
             >
-              <span className={styles.starBackground}>★</span>
-              <span 
-                className={styles.starFill}
-                style={{
-                  width: `${fillPercentage}%`
-                }}
-              >
-                ★
-              </span>
+              ★
             </span>
-          );
-        })}
+          </span>
+        ))}
       </div>
-      {/* Commented out for future implementation
-      <span className={styles.reviewCount}>({numReviews})</span>
-      */}
+      <span className={styles.ratingNumber}>
+        {rating.toFixed(1)}
+      </span>
     </div>
   );
 };

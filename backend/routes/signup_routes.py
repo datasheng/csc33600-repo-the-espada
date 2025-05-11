@@ -1,8 +1,8 @@
 import pymysql.cursors
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from db import get_db_connection
 
-signup_bp = Blueprint('signup', __name__, url_prefix='/auth')
+signup_bp = Blueprint('signup_bp', __name__)
 
 @signup_bp.route('/signup', methods=['POST'])
 def signup():
@@ -11,14 +11,14 @@ def signup():
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
-        account_type = data.get('account_type')
+        account_type = data.get('account_type')  # Get account_type from request data
 
         if not all([username, email, password, account_type]):
             return jsonify({'error': 'Missing required fields'}), 400
 
         # Get database connection
         connection = get_db_connection()
-        cursor = connection.cursor()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)  # Use DictCursor like in auth_routes
 
         # Check if email already exists
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -47,9 +47,15 @@ def signup():
             cursor.execute("""
                 INSERT INTO store (ownerID, store_name, address, rating)
                 VALUES (%s, %s, %s, %s)
-            """, (user_id, store_name, store_address, 0.0))  # Default rating 0.0
+            """, (user_id, store_name, store_address, 0.0))
 
         connection.commit()
+
+        # Set session data like in auth_routes
+        session['logged_in'] = True
+        session['user_id'] = user_id
+        session['email'] = email
+
         return jsonify({
             'message': f'{account_type.capitalize()} user registered successfully',
             'user': {

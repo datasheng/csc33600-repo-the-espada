@@ -22,7 +22,6 @@ export default function Footer() {
           <ul>
             <li><Link href="/search">Find Gold Chains</Link></li>
             <li><Link href="/map">Map</Link></li>
-            <li><Link href="/linkcard">Apply For LinkCard</Link></li>
           </ul>
         </div>
 

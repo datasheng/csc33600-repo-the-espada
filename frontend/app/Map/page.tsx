@@ -862,10 +862,7 @@ const MapComponent: React.FC = () => {
                 Get Directions
               </a>
               <Link
-                href={{
-                  pathname: '/map',
-                  query: { storeID: selectedStoreData.storeID } // Changed from storeId
-                }}
+                href={`/stores/${selectedStoreData.storeID}`} // Changed from /map to /stores/:id
                 className={styles.detailsButton}
               >
                 View Store Details

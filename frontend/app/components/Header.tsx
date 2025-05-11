@@ -180,7 +180,6 @@ const Header: React.FC = () => {
           )}
         </div>
         <Link href="/map" className={styles.navLink}>Map</Link>
-        <Link href="/linkcard" className={styles.navLink}>LinkCard</Link>
         <Link href="/about-us" className={styles.navLink}>About</Link>
         <Link href="/contact-us" className={styles.navLink}>Contact</Link>
         <Link href="/login" className={styles.authButton}>Login</Link>

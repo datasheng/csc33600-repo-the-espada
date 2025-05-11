@@ -197,3 +197,32 @@ export async function fetchProducts(storeID?: number): Promise<Product[]> {
     throw error; // Re-throw to handle in components
   }
 }
+
+export async function submitRating(
+  storeID: number, 
+  productID: number, 
+  userID: number, 
+  rating: number
+): Promise<void> {
+  try {
+    const response = await fetch(`http://localhost:5000/api/ratings/${storeID}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userID,
+        productID,
+        rating
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to submit rating');
+    }
+  } catch (error) {
+    console.error('Error submitting rating:', error);
+    throw error;
+  }
+}

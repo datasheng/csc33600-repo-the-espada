@@ -1,6 +1,9 @@
 from typing import List, Optional
 import pymysql
 from db import get_db_connection
+import logging
+
+logger = logging.getLogger(__name__)
 
 class StoreController:
     def __init__(self):
@@ -127,3 +130,35 @@ class StoreController:
         finally:
             cursor.close()
             connection.close()
+
+    def update_store_rating(self, storeID: int, cursor, connection):
+        try:
+            logger.info(f"\u2192 Starting store rating update for storeID {storeID}")
+
+            cursor.execute("""
+                SELECT COUNT(*) as rating_count, 
+                       ROUND(AVG(rating), 2) as avg_rating
+                FROM user_update
+                WHERE storeID = %s AND rating IS NOT NULL
+            """, (storeID,))
+
+            result = cursor.fetchone()
+            rating_count = result['rating_count']
+            avg_rating = float(result['avg_rating']) if result['avg_rating'] else 0.00
+
+            logger.info(f"\u2192 Found {rating_count} ratings. Avg = {avg_rating}")
+
+            if rating_count > 0:
+                cursor.execute("""
+                    UPDATE store
+                    SET rating = %s
+                    WHERE storeID = %s
+                """, (avg_rating, storeID))
+                connection.commit()
+                logger.info(f"\u2192 Store {storeID} rating updated to {avg_rating}")
+            else:
+                logger.warning(f"\u2192 No ratings found for store {storeID}.")
+        except Exception as e:
+            connection.rollback()
+            logger.error(f"\u274c Error updating store rating: {e}")
+            raise e

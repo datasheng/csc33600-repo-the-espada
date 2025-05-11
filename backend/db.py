@@ -9,5 +9,3 @@ def get_db_connection():
         database=Config.MYSQL_DB,
         cursorclass=pymysql.cursors.DictCursor
     )    
-
-

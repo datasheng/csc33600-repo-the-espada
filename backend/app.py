@@ -7,6 +7,7 @@ from routes.auth_routes import auth_bp
 from routes.report_routes import report_bp
 from routes.store_hours_routes import store_hours_bp  # Add this import
 from routes.signup_routes import signup_bp
+from routes.rating_routes import rating_bp
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'
@@ -20,6 +21,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(report_bp)
 app.register_blueprint(store_hours_bp)  # Register the new blueprint
 app.register_blueprint(signup_bp)
+app.register_blueprint(rating_bp)
 
 if __name__ == '__main__':
     app.run(
