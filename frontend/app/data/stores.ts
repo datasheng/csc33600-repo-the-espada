@@ -39,6 +39,11 @@ export interface StoreStatus {
   nextChange: string;
 }
 
+// Raw types for API responses
+type RawStore = { storeID: string; ownerID: string; store_name: string; rating: string; address: string; latitude: string; longitude: string; phone: string; email: string };
+type RawHour = { storeHourID: number; storeID: number; day: string; openTime: string; closeTime: string };
+type RawProduct = { productID: string; storeID: string; chain_type: string; chain_purity: string; chain_thickness: string; chain_length: string; chain_color: string; chain_weight: string; set_price: string };
+
 // --------------------
 // Constants
 // --------------------
@@ -80,6 +85,25 @@ export const GOLD_PURITIES = [
   { value: '24', label: '24K Pure Gold' }
 ];
 
+// Demo data for simulation purposes
+const DEMO_DAYS: StoreHours['day'][] = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DEMO_STORE: Store = {
+  storeID: 0,
+  ownerID: 0,
+  store_name: 'Demo Store',
+  rating: 4.5,
+  address: '123 Demo Blvd, Demo City',
+  latitude: 40.7128,
+  longitude: -74.0060,
+  phone: '000-000-0000',
+  email: 'demo@store.com'
+};
+const DEMO_HOURS: StoreHours[] = DEMO_DAYS.map(day => ({ storeHourID: 0, storeID: 0, day, openTime: '09:00 AM', closeTime: '05:00 PM' }));
+const DEMO_PRODUCTS: Product[] = [
+  { productID: 0, storeID: 0, chain_type: 'Anchor', chain_purity: '14', chain_thickness: 2, chain_length: 18, chain_color: 'Yellow', chain_weight: 10, set_price: 199.99 },
+  { productID: 1, storeID: 0, chain_type: 'Rope', chain_purity: '18', chain_thickness: 1.5, chain_length: 20, chain_color: 'White', chain_weight: 8, set_price: 249.99 }
+];
+
 // --------------------
 // Functions
 // --------------------
@@ -117,7 +141,9 @@ export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
 // Helper function to parse time strings
 const parseTimeString = (timeStr: string): number => {
   const [time, period] = timeStr.split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
+  const [hourStr, minuteStr] = time.split(':');
+  let hours = Number(hourStr);
+  const minutes = Number(minuteStr);
   if (period === 'PM' && hours !== 12) hours += 12;
   if (period === 'AM' && hours === 12) hours = 0;
   return hours * 60 + minutes;
@@ -130,9 +156,8 @@ export async function fetchStores(): Promise<Store[]> {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Failed to fetch stores');
     }
-    
-    const stores = await response.json();
-    return stores.map((store: any) => ({
+    const storesJSON = await response.json() as RawStore[];
+    const mapped = storesJSON.map(store => ({
       storeID: parseInt(store.storeID),
       ownerID: parseInt(store.ownerID),
       store_name: store.store_name,
@@ -143,22 +168,23 @@ export async function fetchStores(): Promise<Store[]> {
       phone: store.phone,
       email: store.email
     }));
+    return [DEMO_STORE, ...mapped];
   } catch (error) {
-    console.error('Error fetching stores:', error);
-    throw error;
+    console.error('Error fetching stores, returning demo only:', error);
+    return [DEMO_STORE];
   }
 }
 
 export async function fetchStoreHours(storeID: number): Promise<StoreHours[]> {
+  if (storeID === DEMO_STORE.storeID) return Promise.resolve(DEMO_HOURS);
   try {
     const response = await fetch(`http://localhost:5000/api/store-hours/${storeID}`);
     if (!response.ok) throw new Error('Failed to fetch store hours');
-    
-    const hours = await response.json();
-    return hours.map((hour: any) => ({
+    const hoursJSON = await response.json() as RawHour[];
+    return hoursJSON.map(hour => ({
       storeHourID: hour.storeHourID,
       storeID: hour.storeID,
-      day: hour.day,
+      day: hour.day as StoreHours['day'],
       openTime: hour.openTime,
       closeTime: hour.closeTime
     }));
@@ -169,19 +195,18 @@ export async function fetchStoreHours(storeID: number): Promise<StoreHours[]> {
 }
 
 export async function fetchProducts(storeID?: number): Promise<Product[]> {
+  if (storeID === DEMO_STORE.storeID) return Promise.resolve(DEMO_PRODUCTS);
   try {
     const url = storeID 
       ? `http://localhost:5000/api/products?storeID=${storeID}`
       : 'http://localhost:5000/api/products';
-    
     const response = await fetch(url);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Failed to fetch products');
     }
-    
-    const products = await response.json();
-    return products.map((product: any) => ({
+    const productsJSON = await response.json() as RawProduct[];
+    return productsJSON.map(product => ({
       productID: parseInt(product.productID),
       storeID: parseInt(product.storeID),
       chain_type: product.chain_type,

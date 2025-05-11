@@ -28,3 +28,41 @@ def get_product(product_id):
     except Exception as e:
         print(f"Error getting product: {e}")
         return jsonify({"error": str(e)}), 500
+
+@product_bp.route('/api/products', methods=['POST'])
+def add_product():
+    data = request.get_json()
+    try:
+        created = product_controller.add_product(
+            data.get('storeID'),
+            data.get('chain_type'),
+            data.get('chain_purity'),
+            data.get('chain_thickness'),
+            data.get('chain_length'),
+            data.get('chain_color'),
+            data.get('chain_weight'),
+            data.get('set_price')
+        )
+        return jsonify(created), 201
+    except Exception as e:
+        print(f"Error adding product: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@product_bp.route('/api/products/<int:productID>', methods=['PUT'])
+def update_product_price(productID):
+    data = request.get_json()
+    try:
+        product_controller.update_product_price(productID, data.get('set_price'))
+        return jsonify({"message": "Product price updated"}), 200
+    except Exception as e:
+        print(f"Error updating product price: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@product_bp.route('/api/products/<int:productID>', methods=['DELETE'])
+def delete_product(productID):
+    try:
+        product_controller.delete_product(productID)
+        return jsonify({"message": "Product deleted"}), 200
+    except Exception as e:
+        print(f"Error deleting product: {e}")
+        return jsonify({"error": str(e)}), 500
