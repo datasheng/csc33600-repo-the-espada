@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Header.module.css';
+import axios from 'axios';
+
+interface HeaderProps {
+  isLoggedIn: boolean; // Define the prop type
+}
 
 // Update the type definition to be more specific
 type ChainType = string | {
@@ -12,9 +17,10 @@ type ChainType = string | {
 };
 
 const Header: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
-
+  
   // Update the chainTypes array with proper typing
   const chainTypes: ChainType[] = [
     "Anchor",
@@ -66,6 +72,11 @@ const Header: React.FC = () => {
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(loggedInStatus);
   }, []);
 
   return (
@@ -183,8 +194,25 @@ const Header: React.FC = () => {
         <Link href="/linkcard" className={styles.navLink}>LinkCard</Link>
         <Link href="/about-us" className={styles.navLink}>About</Link>
         <Link href="/contact-us" className={styles.navLink}>Contact</Link>
-        <Link href="/login" className={styles.authButton}>Login</Link>
-        <Link href="/signup" className={styles.authButton}>Sign Up</Link>
+        {isLoggedIn ? (
+          <>
+            <Link href="/profile" className={styles.authButton}>Profile</Link>
+            <Link href="/"
+              className={styles.authButton}
+              onClick={() => {
+                localStorage.removeItem("isLoggedIn"); // Clear login status
+                setIsLoggedIn(false); // Update state
+              }}
+            >
+              Sign Out
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link href="/login" className={styles.authButton}>Login</Link>
+            <Link href="/signup" className={styles.authButton}>Sign Up</Link>
+          </>
+        )}
       </nav>
     </header>
   );
