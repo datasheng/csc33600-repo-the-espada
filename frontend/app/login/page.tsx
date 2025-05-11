@@ -9,6 +9,7 @@ export default function Login() {
     const [data, setData] = useState({ email: "", password: "" });
     const [response, setResponse] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const router = useRouter();
 
     const handleChange = (e: any) =>{
@@ -30,10 +31,10 @@ export default function Login() {
                 withCredentials: true,
             });
 
-            //setResponse(response.data.message);
             setError(null);
             console.log(response.status, response.data.message);
-
+            localStorage.setItem("isLoggedIn", "true");
+            setIsLoggedIn(true);
             router.push("/"); //goes to home page after successful login
         } catch (err: any) {
             console.error(err);
@@ -44,7 +45,7 @@ export default function Login() {
 
     return (
         <>
-            <Header />
+            <Header/>
             <main>
                 <div className='text-lg'>
                 <div className='relative bg-[url("/hero-background.jpg")] bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center p-4'>
