@@ -7,6 +7,7 @@ export interface Store {
   ownerID: number;      // Matches INT NOT NULL
   store_name: string;   // Matches VARCHAR(50) NOT NULL
   rating: number;       // Matches DECIMAL(3,2)
+  rating_count: number; // Changed from ratingCount
   address: string;      // Matches TEXT NOT NULL
   latitude: number;     // Matches DECIMAL(10,7) NOT NULL
   longitude: number;    // Matches DECIMAL(10,7) NOT NULL
@@ -137,6 +138,7 @@ export async function fetchStores(): Promise<Store[]> {
       ownerID: parseInt(store.ownerID),
       store_name: store.store_name,
       rating: parseFloat(store.rating),
+      rating_count: parseInt(store.rating_count),
       address: store.address,
       latitude: parseFloat(store.latitude),
       longitude: parseFloat(store.longitude),
@@ -224,5 +226,37 @@ export async function submitRating(
   } catch (error) {
     console.error('Error submitting rating:', error);
     throw error;
+  }
+}
+
+export async function fetchUserRating(storeID: number, userID: number): Promise<number> {
+  try {
+    const url = `http://localhost:5000/api/ratings/${storeID}/user/${userID}`;
+    console.log('🔍 [fetchUserRating] Making request:', { storeID, userID, url });
+    
+    const response = await fetch(url, {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    console.log('📥 [fetchUserRating] Response status:', response.status);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('📦 [fetchUserRating] Response data:', data);
+    
+    if (typeof data.rating !== 'number') {
+      return 0;
+    }
+
+    return data.rating;
+  } catch (error) {
+    console.error('❌ [fetchUserRating] Error:', error);
+    return 0;
   }
 }

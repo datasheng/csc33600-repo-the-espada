@@ -4,7 +4,7 @@ from db import get_db_connection
 
 auth_bp = Blueprint('auth_bp', __name__)
 
-@auth_bp.route('/api/login', methods=['POST'])  # Changed from '/login' to '/api/login'
+@auth_bp.route('/api/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
@@ -12,37 +12,33 @@ def login():
         password = data.get('password')
 
         if not email or not password:
-            return jsonify({'message': 'Email and password are required'}), 400
+            return jsonify({'error': 'Email and password are required'}), 400
 
-        database = get_db_connection()
-        if database is None:
-            return jsonify({'message': 'Database connection failed'}), 500
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
 
-        connection = database.cursor(pymysql.cursors.DictCursor)
-
-        # Check if user exists
-        connection.execute("SELECT * FROM users WHERE email = %s", (email,))
-        user = connection.fetchone()
-        print(f"User fetched from database: {user}")
-
-        if not user:
-            return jsonify({'message': 'User not found'}), 404
-
-        print(f"Stored password: {user['user_password']}, Provided password: {password}")
-
-        if user['user_password'] != password:
-            return jsonify({'message': 'Incorrect password'}), 401
-
-        # Set session data
-        session['logged_in'] = True
-        session['user_id'] = user['userID']
-        session['email'] = user['email']
-
-        return jsonify({'message': 'User logged in successfully'}), 200
+        if user and user['user_password'] == password:
+            # Return user data in response
+            return jsonify({
+                'message': 'User logged in successfully',
+                'user': {
+                    'userID': user['userID'],
+                    'email': user['email']
+                }
+            }), 200
+        else:
+            return jsonify({'error': 'Invalid credentials'}), 401
 
     except Exception as e:
-        print(f"Error during login: {e}")
-        return jsonify({'error': 'Failed to login'}), 500
+        print(f"Login error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 @auth_bp.route('/api/logout')  # Changed from '/logout' to '/api/logout'
 def logout():

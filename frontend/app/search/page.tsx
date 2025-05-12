@@ -364,7 +364,7 @@ const SearchPage: React.FC = () => {
                             <StarRating 
                               rating={store.rating} 
                               size="medium"
-                              // Removed numReviews as it's not in Store interface
+                              numReviews={store.rating_count} // Add this line
                             />
                           </div>
                           <div className="text-right flex flex-col items-end gap-4">

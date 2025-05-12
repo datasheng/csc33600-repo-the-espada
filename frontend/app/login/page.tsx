@@ -20,29 +20,43 @@ export default function Login() {
         }))
     }
     const handleSubmit = async (e: any) => {
-        e.preventDefault() //stops default form submission
+        e.preventDefault();
         const userData = {
             email: data.email,
             password: data.password,
         };
 
         try {
-            const response = await axios.post("http://localhost:5000/api/login", userData, {
+            const response = await axios.post("http://127.0.0.1:5000/api/login", userData, {
                 withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            });
+
+            console.log('Login response:', response.data);
+            
+            // Check if response has user data
+            if (!response.data?.user?.userID) {
+                console.error('Invalid response format:', response.data);
+                throw new Error('Invalid response from server');
+            }
+
+            // Store both isLoggedIn and userId in localStorage
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("userId", response.data.user.userID.toString());
+            
+            console.log('Stored user data:', {
+                isLoggedIn: true,
+                userId: response.data.user.userID
             });
             
             setError(null);
-            console.log(response.status, response.data.message);
-            localStorage.setItem("isLoggedIn", "true");
             setIsLoggedIn(true);
-            router.push("/"); //goes to home page after successful login
+            router.push("/");
         } catch (err: any) {
-            console.error("Login error:", err);
-            setError(err.response?.data?.message || "An error occurred");
+            console.error('Login error:', err);
+            setError(err.response?.data?.message || err.message || "An error occurred");
             setResponse(null);
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("userId");
         }
     };
 

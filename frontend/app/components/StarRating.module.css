@@ -5,10 +5,14 @@
   margin: 4px 0;
 }
 
+/* Base styling for rating number */
 .ratingNumber {
   color: #FFD700;
   font-weight: bold;
-  margin-right: 0px;
+  margin-right: -2px; /* Increase space between number and stars */
+  /* Optional: add vertical alignment */
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .stars {
@@ -42,8 +46,8 @@
 }
 
 .reviewCount {
+  font-size: 1.1rem; /* Base size */
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.875rem;
 }
 
 /* Size variants */
@@ -52,11 +56,12 @@
 }
 
 .small .reviewCount {
-  font-size: 12px;
+  font-size: 0.9rem;
 }
 
+/* Size variations for rating number */
 .small .ratingNumber {
-  font-size: 14px;
+  font-size: 1.2rem; /* Smaller size */
 }
 
 .medium .star {
@@ -64,11 +69,12 @@
 }
 
 .medium .reviewCount {
-  font-size: 14px;
+  font-size: 1.1rem;
 }
 
+/* Size variations for rating number */
 .medium .ratingNumber {
-  font-size: 16px;
+  font-size: 1.2rem; /* Medium size */
 }
 
 .large .star {
@@ -76,9 +82,26 @@
 }
 
 .large .reviewCount {
-  font-size: 16px;
+  font-size: 1.05rem;
 }
 
+/* Size variations for rating number */
 .large .ratingNumber {
-  font-size: 20px;
+  font-size: 1.6rem; /* Larger size */
+}
+
+/* Size variations - increase all sizes */
+.small .star svg {
+  height: 1.4rem;
+  width: 1.4rem;
+}
+
+.medium .star svg {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+.large .star svg {
+  height: 2rem;
+  width: 2rem;
 }

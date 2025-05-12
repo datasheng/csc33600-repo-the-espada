@@ -12,8 +12,10 @@ import {
   fetchStores,
   fetchStoreHours,
   fetchProducts,
+  fetchUserRating,  // Add this import
   getStoreStatus, 
-  getFormattedProductName
+  getFormattedProductName,
+  submitRating
 } from '../../data/stores';
 import styles from './StorePage.module.css';
 import { motion } from 'framer-motion';
@@ -36,108 +38,195 @@ const DAYS_OF_WEEK = [
   'Friday', 'Saturday', 'Sunday'
 ];
 
+// Update RatingSection to use local login check
+const RatingSection: React.FC<{
+  rating: number;
+  userRating: number;
+  onRatingSubmit: (rating: number) => Promise<void>;
+  isSubmitting: boolean;
+}> = ({ rating, userRating, onRatingSubmit, isSubmitting }) => {
+  const router = useRouter();
+  const [currentUserRating, setCurrentUserRating] = useState(userRating);
+  const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem('isLoggedIn') === 'true';
+
+  useEffect(() => {
+    console.log('RatingSection received userRating:', userRating);
+    setCurrentUserRating(userRating);
+  }, [userRating]);
+
+  const handleRatingChange = async (newRating: number) => {
+    try {
+      setCurrentUserRating(newRating);
+      await onRatingSubmit(newRating);
+    } catch (error) {
+      console.error('Failed to submit rating:', error);
+      setCurrentUserRating(userRating); // Reset to user's saved rating on error
+    }
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="bg-white/10 rounded-lg p-6">
+        <h3 className="text-xl text-white font-bold mb-4">Rate this Store</h3>
+        <div className="space-y-4">
+          <div className="flex flex-col items-start gap-2">
+            <label className="text-gray-400">Your Rating:</label>
+            <StarRating rating={0} size="large" readonly />
+          </div>
+          <button
+            onClick={() => router.push('/login')}
+            className="w-full bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
+          >
+            Log In To Rate This Store
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/10 rounded-lg p-6">
+      <h3 className="text-xl text-white font-bold mb-4">Rate this Store</h3>
+      <div className="space-y-4">
+        <div className="flex flex-col items-start gap-2">
+          <label className="text-gray-400">Your Rating:</label>
+          <StarRating 
+            rating={currentUserRating}
+            size="large"
+            onRatingSubmit={handleRatingChange}
+            readonly={isSubmitting}
+          />
+        </div>
+        {isSubmitting && (
+          <p className="text-[#FFD700] text-sm">Submitting your rating...</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Update StoreContent props
 const StoreContent: React.FC<{ 
   store: Store; 
   hours: StoreHours[]; 
-  products: Product[]; 
-}> = ({ store, hours, products }) => {
+  products: Product[];
+  onRatingSubmit: (rating: number) => Promise<void>;
+  isSubmitting: boolean;
+  userRating: number;
+}> = ({ store, hours, products, onRatingSubmit, isSubmitting, userRating }) => {
+  console.log('[StoreContent] Received userRating:', userRating);
+  
   const { isOpen, nextChange } = getStoreStatus(hours);
 
   return (
     <div className="bg-black rounded-lg p-8 shadow-xl">
       {/* Store Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl text-[#FFD700] font-bold mb-4 tracking-tight">
-          {store.store_name}
-        </h1>
-        
-        <div className="mb-6">
-          <StarRating 
-            rating={store.rating} 
-            size="large"
-            // numReviews={store.numReviews}  // To be implemented in the future
+      <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Store Info - Takes up 2 columns */}
+        <div className="lg:col-span-2">
+          <h1 className="text-4xl text-[#FFD700] font-bold mb-4 tracking-tight">
+            {store.store_name}
+          </h1>
+          
+          <div className="mb-6">
+            <StarRating 
+              rating={store.rating} 
+              size="large"
+              readonly={true}
+              numReviews={store.rating_count} // Changed from ratingCount
+            />
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-3 mb-8">
+            {/* Changed from lat/lng */}
+            <a 
+              href={`https://maps.google.com/?q=${store.latitude},${store.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {store.address}
+            </a>
+            
+            <a 
+              href={`tel:${store.phone}`}
+              className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              {store.phone}
+            </a>
+            
+            <a 
+              href={`mailto:${store.email}`}
+              className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              {store.email}
+            </a>
+          </div>
+        </div>
+
+        {/* Rating Section - Takes up 1 column */}
+        <div className="lg:col-span-1">
+          <RatingSection
+            rating={store.rating}
+            userRating={userRating} // Pass user's personal rating
+            onRatingSubmit={onRatingSubmit}
+            isSubmitting={isSubmitting}
           />
         </div>
+      </div>
 
-        {/* Contact Information */}
-        <div className="space-y-3 mb-8">
-          {/* Changed from lat/lng */}
-          <a 
-            href={`https://maps.google.com/?q=${store.latitude},${store.longitude}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {store.address}
-          </a>
-          
-          <a 
-            href={`tel:${store.phone}`}
-            className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-            {store.phone}
-          </a>
-          
-          <a 
-            href={`mailto:${store.email}`}
-            className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            {store.email}
-          </a>
+      {/* Store Status and Hours */}
+      <div className="bg-white/10 rounded-lg p-6 mb-6">
+        <div className="flex items-center gap-2 mb-6">
+          <span className={`${styles.statusDot} ${isOpen ? styles.open : styles.closed}`} />
+          <span className="text-white text-lg font-medium">
+            {isOpen ? 'Open' : 'Closed'}
+          </span>
+          <span className="text-gray-400 mx-2 text-lg">•</span>
+          <span className="text-gray-400 text-lg">{nextChange}</span>
+        </div>
+        
+        {/* Business Hours */}
+        <div className="space-y-2 mb-6">
+          {DAYS_OF_WEEK.map((day) => {
+            const hourData = hours.find(h => h.day === day);
+            return (
+              <div key={day} className="flex justify-between">
+                <span className="text-gray-400 w-24 text-base font-medium">
+                  {day}
+                </span>
+                <span className="text-white text-base">
+                  {hourData 
+                    ? `${hourData.openTime} - ${hourData.closeTime}`
+                    : 'Closed'}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Store Status and Hours */}
-        <div className="bg-white/10 rounded-lg p-6 mb-6">
-          <div className="flex items-center gap-2 mb-6">
-            <span className={`${styles.statusDot} ${isOpen ? styles.open : styles.closed}`} />
-            <span className="text-white text-lg font-medium">
-              {isOpen ? 'Open' : 'Closed'}
-            </span>
-            <span className="text-gray-400 mx-2 text-lg">•</span>
-            <span className="text-gray-400 text-lg">{nextChange}</span>
-          </div>
-          
-          {/* Business Hours */}
-          <div className="space-y-2 mb-6">
-            {DAYS_OF_WEEK.map((day) => {
-              const hourData = hours.find(h => h.day === day);
-              return (
-                <div key={day} className="flex justify-between">
-                  <span className="text-gray-400 w-24 text-base font-medium">
-                    {day}
-                  </span>
-                  <span className="text-white text-base">
-                    {hourData 
-                      ? `${hourData.openTime} - ${hourData.closeTime}`
-                      : 'Closed'}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col gap-4">
-            <Link
-              href={{
-                pathname: '/map',
-                query: { storeId: store.storeID }
-              }}
-              className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors w-full text-center"
-            >
-              View Store on Map
-            </Link>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-4">
+          <Link
+            href={{
+              pathname: '/map',
+              query: { storeId: store.storeID }
+            }}
+            className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors w-full text-center"
+          >
+            View Store on Map
+          </Link>
         </div>
       </div>
 
@@ -180,15 +269,80 @@ const StorePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userPersonalRating, setUserPersonalRating] = useState<number>(0);
   const params = useParams();
   const storeId = params.id as string;
+  const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem('isLoggedIn') === 'true';
+  const userId = isLoggedIn ? Number(localStorage.getItem('userId')) : null;
+
+  // Add function to refresh store data
+  const refreshStoreData = async () => {
+    try {
+      const stores = await fetchStores();
+      const storeData = stores.find(s => s.storeID.toString() === storeId);
+      if (storeData) {
+        setStore(storeData);
+      }
+    } catch (error) {
+      console.error('Error refreshing store data:', error);
+    }
+  };
+
+  const handleRatingSubmit = async (rating: number) => {
+    if (!isLoggedIn || !store || isSubmitting || products.length === 0 || !userId) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Submit rating to backend
+      await submitRating(
+        store.storeID,
+        products[0].productID,
+        userId,
+        rating
+      );
+
+      // Refresh store data to get updated rating
+      await refreshStoreData();
+      
+      // Show success toast or message
+      // You can add a toast notification here if desired
+      
+    } catch (error) {
+      console.error('Failed to submit rating:', error);
+      // Show error message to user
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Get userId from localStorage on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUserId = localStorage.getItem('userId');
+      console.log('[StorePage] Stored userId:', storedUserId);
+    }
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        // Fetch store data
-        const stores = await fetchStores();
+        const storedUserId = localStorage.getItem('userId');
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+        console.log('👤 [StorePage] Auth Info:', {
+          isLoggedIn,
+          userId: storedUserId
+        });
+
+        const [stores, hoursData, productsData] = await Promise.all([
+          fetchStores(),
+          fetchStoreHours(parseInt(storeId)),
+          fetchProducts()
+        ]);
+
         const storeData = stores.find(s => s.storeID.toString() === storeId);
         
         if (!storeData) {
@@ -196,19 +350,36 @@ const StorePage: React.FC = () => {
           return;
         }
 
-        // Fetch hours and products
-        const [hoursData, productsData] = await Promise.all([
-          fetchStoreHours(storeData.storeID),
-          fetchProducts()
-        ]);
-
+        // Filter products for this store
         const storeProducts = productsData.filter(p => p.storeID === storeData.storeID);
-        
+
+        // Set all the data
         setStore(storeData);
         setHours(hoursData);
         setProducts(storeProducts);
+
+        // Only fetch user rating if user is logged in and we have a userId
+        if (isLoggedIn && storedUserId) {
+          try {
+            const userId = parseInt(storedUserId);
+            console.log('⭐ [StorePage] Fetching rating:', { 
+              storeId: storeData.storeID, 
+              userId 
+            });
+            
+            const userRatingData = await fetchUserRating(storeData.storeID, userId);
+            console.log('✅ [StorePage] Received rating:', userRatingData);
+            
+            setUserPersonalRating(userRatingData);
+          } catch (error) {
+            console.error('❌ [StorePage] Rating fetch error:', error);
+          }
+        } else {
+          console.log('⚠️ [StorePage] Not fetching rating - user not authenticated');
+        }
+
       } catch (err) {
-        console.error('Error loading data:', err);
+        console.error('[StorePage] Error:', err);
         setError('Error loading data');
       } finally {
         setIsLoading(false);
@@ -229,7 +400,14 @@ const StorePage: React.FC = () => {
             ) : error ? (
               <div className="text-center text-red-600">{error}</div>
             ) : store && hours && products ? (
-              <StoreContent store={store} hours={hours} products={products} />
+              <StoreContent 
+                store={store} 
+                hours={hours} 
+                products={products}
+                onRatingSubmit={handleRatingSubmit}
+                isSubmitting={isSubmitting}
+                userRating={userPersonalRating}
+              />
             ) : null}
           </Suspense>
         </div>

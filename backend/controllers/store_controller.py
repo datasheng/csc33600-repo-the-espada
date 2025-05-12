@@ -12,20 +12,19 @@ class StoreController:
 
     def get_all_stores(self) -> List[dict]:
         connection = get_db_connection()
-        if connection is None:
-            raise Exception("Database connection failed")
-            
         cursor = connection.cursor(pymysql.cursors.DictCursor)
         try:
             cursor.execute("""
                 SELECT s.storeID, s.ownerID, s.store_name, s.rating, 
-                       s.address, s.latitude, s.longitude, s.phone, s.email
+                       s.address, s.latitude, s.longitude, s.phone, s.email,
+                       COUNT(u.rating) as rating_count
                 FROM store s
                 JOIN store_owners o ON s.ownerID = o.ownerID
+                LEFT JOIN user_update u ON s.storeID = u.storeID
+                GROUP BY s.storeID
             """)
             stores = cursor.fetchall()
             return stores
-            
         except Exception as e:
             print(f"Database error: {e}")
             raise e
@@ -131,34 +130,40 @@ class StoreController:
             cursor.close()
             connection.close()
 
-    def update_store_rating(self, storeID: int, cursor, connection):
+    def update_store_rating(self, storeID: int) -> None:
+        """Calculate and update store rating based on user reviews"""
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+        
         try:
-            logger.info(f"\u2192 Starting store rating update for storeID {storeID}")
-
+            # Calculate new average rating
             cursor.execute("""
                 SELECT COUNT(*) as rating_count, 
-                       ROUND(AVG(rating), 2) as avg_rating
+                       COALESCE(ROUND(AVG(rating), 2), 0.00) as avg_rating
                 FROM user_update
                 WHERE storeID = %s AND rating IS NOT NULL
             """, (storeID,))
-
+            
             result = cursor.fetchone()
             rating_count = result['rating_count']
-            avg_rating = float(result['avg_rating']) if result['avg_rating'] else 0.00
+            avg_rating = float(result['avg_rating'])
+            
+            logger.info(f"Calculated new rating for store {storeID}: {avg_rating} from {rating_count} ratings")
 
-            logger.info(f"\u2192 Found {rating_count} ratings. Avg = {avg_rating}")
+            # Update store rating
+            cursor.execute("""
+                UPDATE store
+                SET rating = %s
+                WHERE storeID = %s
+            """, (avg_rating, storeID))
+            
+            connection.commit()
+            logger.info(f"Updated store {storeID} rating to {avg_rating}")
 
-            if rating_count > 0:
-                cursor.execute("""
-                    UPDATE store
-                    SET rating = %s
-                    WHERE storeID = %s
-                """, (avg_rating, storeID))
-                connection.commit()
-                logger.info(f"\u2192 Store {storeID} rating updated to {avg_rating}")
-            else:
-                logger.warning(f"\u2192 No ratings found for store {storeID}.")
         except Exception as e:
+            logger.error(f"Error updating store rating: {e}")
             connection.rollback()
-            logger.error(f"\u274c Error updating store rating: {e}")
-            raise e
+            raise
+        finally:
+            cursor.close()
+            connection.close()

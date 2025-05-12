@@ -12,7 +12,7 @@ from routes.rating_routes import rating_bp
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'
 app.config.from_object(Config)
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+CORS(app, supports_credentials=True)
 
 # Import and register blueprints
 app.register_blueprint(store_bp) #url_prefix=Config.API_PREFIX removed

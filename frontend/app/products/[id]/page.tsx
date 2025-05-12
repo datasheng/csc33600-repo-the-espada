@@ -112,7 +112,7 @@ const ProductPage = () => {
                 <StarRating 
                   rating={store.rating} 
                   size="medium"
-                  // Removed numReviews prop as it's not in Store interface
+                  numReviews={store.rating_count} // Add this line
                 />
               </div>
               <p className="text-gray-400">

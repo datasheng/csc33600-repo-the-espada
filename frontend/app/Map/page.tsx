@@ -90,17 +90,17 @@ const MapComponent: React.FC = () => {
   const [currentFilters, setCurrentFilters] = useState({
     goldPurity: "",
     chainStyle: "",
-    thickness: "",
-    length: "",
-    color: "",    // Add this
+    chainColor: "",
+    chainThickness: "",
+    chainLength: "",
   });
 
   const [pendingFilters, setPendingFilters] = useState({
     goldPurity: "",
     chainStyle: "",
-    thickness: "",
-    length: "",
-    color: "",    // Add this
+    chainColor: "",
+    chainThickness: "",
+    chainLength: "",
   });
 
   // Add state for price sort in results
@@ -202,13 +202,7 @@ const MapComponent: React.FC = () => {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    let updatedValue = value;
-  
-    if (name === 'chain_thickness' || name === 'chain_length') {
-      updatedValue = value.replace(/[^0-9.]/g, ''); // Remove units
-    }
-  
-    setPendingFilters(prev => ({ ...prev, [name]: updatedValue }));
+    setPendingFilters(prev => ({ ...prev, [name]: value }));
   };
 
   // Update the handlePriceSortChange function
@@ -239,16 +233,16 @@ const MapComponent: React.FC = () => {
     setPendingFilters({
       goldPurity: "",
       chainStyle: "",
-      thickness: "",
-      length: "",
-      color: "",    // Add this
+      chainColor: "",
+      chainThickness: "",
+      chainLength: "",
     });
     setCurrentFilters({
       goldPurity: "",
       chainStyle: "",
-      thickness: "",
-      length: "",
-      color: "",    // Add this
+      chainColor: "",
+      chainThickness: "",
+      chainLength: "",
     });
     if (isValidIcon(goldIcon)) {
       markers.forEach(marker => marker.setIcon(goldIcon));
@@ -406,9 +400,9 @@ const MapComponent: React.FC = () => {
         const filtered = products.filter(product => {
           if (currentFilters.goldPurity && product.chain_purity !== currentFilters.goldPurity) return false;
           if (currentFilters.chainStyle && product.chain_type !== currentFilters.chainStyle) return false;
-          if (currentFilters.thickness && product.chain_thickness !== parseFloat(currentFilters.thickness)) return false;
-          if (currentFilters.length && product.chain_length !== parseFloat(currentFilters.length)) return false;
-          if (currentFilters.color && product.chain_color !== currentFilters.color) return false;
+          if (currentFilters.chainThickness && product.chain_thickness !== parseFloat(currentFilters.chainThickness)) return false;
+          if (currentFilters.chainLength && product.chain_length !== parseFloat(currentFilters.chainLength)) return false;
+          if (currentFilters.chainColor && product.chain_color !== currentFilters.chainColor) return false;
           return true;
         });
 
@@ -463,9 +457,9 @@ const MapComponent: React.FC = () => {
     setCurrentFilters({
       goldPurity: "",
       chainStyle: "",
-      thickness: "",
-      length: "",
-      color: "",
+      chainColor: "",
+      chainThickness: "",
+      chainLength: "",
     });
   
     // Reset all markers first
@@ -614,7 +608,7 @@ const MapComponent: React.FC = () => {
                   <CustomListbox
                     options={[
                       { value: '', label: 'All Types' },
-                      { value: 'Anchor', label: 'ANCHOR' },
+                      { value: 'Anchor', label: 'Anchor Chain' },
                       { value: 'Ball', label: 'Ball Chain' },
                       { value: 'Box', label: 'Box Chain' },
                       { value: 'Byzantine', label: 'Byzantine Chain' },
@@ -632,7 +626,7 @@ const MapComponent: React.FC = () => {
                     ]}
                     value={pendingFilters.chainStyle}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'chain_type', value }
+                      target: { name: 'chainStyle', value }
                     } as any)}
                     label="Chain Type"
                   />
@@ -651,9 +645,9 @@ const MapComponent: React.FC = () => {
                       { value: 'Two-Color', label: 'Two-Tone' },
                       { value: 'Tri-Color', label: 'Tri-Color' },
                     ]}
-                    value={pendingFilters.color}
+                    value={pendingFilters.chainColor}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'color', value }
+                      target: { name: 'chainColor', value }
                     } as any)}
                     label="Chain Color"
                   />
@@ -669,14 +663,14 @@ const MapComponent: React.FC = () => {
                       ...Array.from({ length: 39 }, (_, i) => {
                         const thickness = (i + 2) / 2;
                         return {
-                          value: `${thickness} mm`,
+                          value: thickness.toString(),
                           label: `${thickness} mm`
                         };
                       })
                     ]}
-                    value={pendingFilters.thickness}
+                    value={pendingFilters.chainThickness}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'chain_thickness', value }
+                      target: { name: 'chainThickness', value }
                     } as any)}
                     label="Chain Thickness"
                   />
@@ -692,14 +686,14 @@ const MapComponent: React.FC = () => {
                       ...Array.from({ length: 8 }, (_, i) => {
                         const length = 16 + (i * 2);
                         return {
-                          value: `${length} in`,
+                          value: length.toString(),
                           label: `${length} inches`
                         };
                       })
                     ]}
-                    value={pendingFilters.length}
+                    value={pendingFilters.chainLength}
                     onChange={(value) => handleFilterChange({
-                      target: { name: 'chain_length', value }
+                      target: { name: 'chainLength', value }
                     } as any)}
                     label="Chain Length"
                   />
@@ -760,7 +754,7 @@ const MapComponent: React.FC = () => {
                 
                 return (
                   <div 
-                    key={product.productID} // Changed from productId
+                    key={product.productID}
                     className={`${styles.productCard} ${selectedProductId === product.productID ? styles.selected : ''}`}
                     onClick={() => handleStoreClick(store.storeID, product.productID)}
                   >
@@ -769,8 +763,29 @@ const MapComponent: React.FC = () => {
                         {getFormattedProductName(product)}
                       </p>
                       <p className={styles.storeName}>
-                        {store.store_name} {/* Changed from name */}
+                        {store.store_name}
                       </p>
+                      
+                      {/* Add star rating component */}
+                      <div className={styles.storeRating}>
+                        <StarRating 
+                          rating={store.rating} 
+                          size="small"
+                          readonly={true}
+                          numReviews={store.rating_count}
+                        />
+                      </div>
+                      
+                      {/* Add store status display for each card */}
+                      {hours?.length > 0 && (
+                        <div className={styles.cardStoreStatus}>
+                          <span className={`${styles.statusDot} ${getStoreStatus(hours).isOpen ? styles.open : styles.closed}`} />
+                          <span className={styles.statusText}>
+                            {getStoreStatus(hours).isOpen ? 'Open' : 'Closed'}
+                          </span>
+                        </div>
+                      )}
+                      
                       <p className={styles.productPrice}>
                         ${product.set_price.toLocaleString()}
                       </p>
@@ -809,7 +824,8 @@ const MapComponent: React.FC = () => {
             <StarRating 
               rating={selectedStoreData.rating} 
               size="large" 
-              // Remove numReviews as it's not in the Store interface
+              readonly={true}
+              numReviews={selectedStoreData.rating_count}
             />
             
             <p className={styles.address}>{selectedStoreData.address}</p>
