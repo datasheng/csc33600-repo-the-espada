@@ -1,5 +1,6 @@
 from typing import List, Optional
 import pymysql
+import pymysql.cursors
 from mysql.connector import Error
 from db import get_db_connection
 
@@ -48,6 +49,34 @@ class ProductController:
                 FROM product
                 WHERE storeID = %s
             """, (store_id,))
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"Database error: {e}")
+            raise e
+        finally:
+            cursor.close()
+            connection.close()
+    
+    def get_purchases(self, product_id: int):
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+        try:
+            cursor.execute("""
+                SELECT 
+                    CONCAT(u.first_name, ' ', u.last_name) AS full_name, 
+                    uu.latest_price, 
+                    uu.submitted_at
+                FROM 
+                    user_update uu
+                JOIN 
+                    users u ON uu.userID = u.userID
+                WHERE 
+                    uu.productID = %s
+                ORDER BY 
+                    uu.latest_price ASC, 
+                    uu.submitted_at DESC
+                LIMIT 10;     
+            """, (product_id,))
             return cursor.fetchall()
         except Exception as e:
             print(f"Database error: {e}")

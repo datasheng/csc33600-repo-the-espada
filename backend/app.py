@@ -13,6 +13,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'
 app.config.from_object(Config)
 CORS(app, supports_credentials=True)
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
 
 # Import and register blueprints
 app.register_blueprint(store_bp) #url_prefix=Config.API_PREFIX removed
@@ -23,7 +25,5 @@ app.register_blueprint(store_hours_bp)  # Register the new blueprint
 app.register_blueprint(signup_bp)
 app.register_blueprint(rating_bp)
 
-if __name__ == '__main__':
-    app.run(
-        debug=True
-    )
+if __name__ == "__main__":
+    app.run(debug=True)

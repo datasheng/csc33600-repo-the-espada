@@ -24,7 +24,13 @@ def get_product(product_id):
         product = product_controller.get_product_by_id(product_id)
         if product is None:
             return jsonify({"error": "Product not found"}), 404
-        return jsonify(product)
+
+        purchases = product_controller.get_purchases(product_id)
+
+        return jsonify(product
+            # {"product": product, add these in to return latest and top purchases
+            # "top_purchases": purchases}
+            ), 200
     except Exception as e:
         print(f"Error getting product: {e}")
         return jsonify({"error": str(e)}), 500
