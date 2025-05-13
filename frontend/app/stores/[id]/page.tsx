@@ -17,7 +17,8 @@ import {
   getFormattedProductName,
   submitRating,
   fetchRatingDistribution,
-  RatingDistribution  // Add this import
+  RatingDistribution,  // Add this import
+  DAYS_OF_WEEK  // Add this import
 } from '../../data/stores';
 import styles from './StorePage.module.css';
 import { motion } from 'framer-motion';
@@ -34,11 +35,6 @@ const LoadingState = () => (
     <Footer />
   </div>
 );
-
-const DAYS_OF_WEEK = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
-  'Friday', 'Saturday', 'Sunday'
-];
 
 // Update RatingSection to use local login check
 const RatingSection: React.FC<{
@@ -259,7 +255,7 @@ const StoreContent: React.FC<{
         {/* Business Hours */}
         <div className="space-y-2 mb-6">
           {DAYS_OF_WEEK.map((day) => {
-            const hourData = hours.find(h => h.day === day);
+            const hourData = hours.find(h => h.daysOpen === day);
             return (
               <div key={day} className="flex justify-between">
                 <span className="text-gray-400 w-24 text-base font-medium">

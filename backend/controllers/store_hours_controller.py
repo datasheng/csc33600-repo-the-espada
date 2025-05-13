@@ -11,9 +11,18 @@ class StoreHoursController:
         cursor = connection.cursor(pymysql.cursors.DictCursor)
         try:
             cursor.execute("""
-                SELECT storeHourID, storeID, day, 
-                       TIME_FORMAT(openTime, '%%h:%%i %%p') as openTime,
-                       TIME_FORMAT(closeTime, '%%h:%%i %%p') as closeTime
+                SELECT 
+                    storeHourID, 
+                    storeID, 
+                    daysOpen,
+                    CASE 
+                        WHEN openTime IS NULL THEN 'CLOSED'
+                        ELSE TIME_FORMAT(openTime, '%h:%i %p')
+                    END as openTime,
+                    CASE 
+                        WHEN closeTime IS NULL THEN 'CLOSED'
+                        ELSE TIME_FORMAT(closeTime, '%h:%i %p')
+                    END as closeTime
                 FROM store_hours 
                 WHERE storeID = %s
                 ORDER BY FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 

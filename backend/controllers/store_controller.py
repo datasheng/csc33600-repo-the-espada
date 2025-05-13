@@ -40,12 +40,12 @@ class StoreController:
         cursor = connection.cursor(pymysql.cursors.DictCursor)
         try:
             cursor.execute("""
-                SELECT storeHourID, storeID, day, 
-                       TIME_FORMAT(openTime, '%%h:%%i %%p') as openTime,
-                       TIME_FORMAT(closeTime, '%%h:%%i %%p') as closeTime
+                SELECT storeHourID, storeID, daysOpen, 
+                       TIME_FORMAT(openTime, '%h:%i %p') as openTime,
+                       TIME_FORMAT(closeTime, '%h:%i %p') as closeTime
                 FROM store_hours 
                 WHERE storeID = %s
-                ORDER BY FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 
+                ORDER BY FIELD(daysOpen, 'Monday', 'Tuesday', 'Wednesday', 
                              'Thursday', 'Friday', 'Saturday', 'Sunday')
             """, (storeID,))
             return cursor.fetchall()

@@ -30,7 +30,7 @@ export interface Product {
 export interface StoreHours {
   storeHourID: number;  // Added to match database
   storeID: number;      // Added to match database
-  day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';  // Matches ENUM
+  daysOpen: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';  // Changed from 'day'
   openTime: string;     // Matches TIME
   closeTime: string;    // Matches TIME
 }
@@ -96,6 +96,11 @@ export const GOLD_PURITIES = [
   { value: '24', label: '24K Pure Gold' }
 ];
 
+export const DAYS_OF_WEEK = [
+  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+  'Friday', 'Saturday', 'Sunday'
+] as const;
+
 // --------------------
 // Functions
 // --------------------
@@ -110,11 +115,11 @@ export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  // Find if the current day exists in store hours
-  const todayHours = hours.find(h => h.day === day);
+  // Updated to use daysOpen instead of day
+  const todayHours = hours.find(h => h.daysOpen === day);
 
-  // If this day isn't listed in hours, store is closed
-  if (!todayHours) {
+  // If this day isn't listed in hours or times are 'CLOSED', store is closed
+  if (!todayHours || todayHours.openTime === 'CLOSED' || todayHours.closeTime === 'CLOSED') {
     return { isOpen: false, nextChange: 'Closed on ' + day };
   }
 
@@ -125,13 +130,17 @@ export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
   const isOpen = currentTime >= openTime && currentTime < closeTime;
   const nextChange = isOpen 
     ? `Closes at ${todayHours.closeTime}` 
-    : 'Currently Closed';
+    : currentTime < openTime 
+      ? `Opens at ${todayHours.openTime}`
+      : 'Currently Closed';
 
   return { isOpen, nextChange };
 };
 
 // Helper function to parse time strings
 const parseTimeString = (timeStr: string): number => {
+  if (timeStr === 'CLOSED') return -1;
+  
   const [time, period] = timeStr.split(' ');
   let [hours, minutes] = time.split(':').map(Number);
   if (period === 'PM' && hours !== 12) hours += 12;
@@ -168,14 +177,15 @@ export async function fetchStores(): Promise<Store[]> {
 
 export async function fetchStoreHours(storeID: number): Promise<StoreHours[]> {
   try {
-    const response = await fetch(`http://localhost:5000/api/store-hours/${storeID}`);
+    // Change from store-hours to stores/[id]/hours to match backend route
+    const response = await fetch(`http://localhost:5000/api/stores/${storeID}/hours`);
     if (!response.ok) throw new Error('Failed to fetch store hours');
     
     const hours = await response.json();
     return hours.map((hour: any) => ({
       storeHourID: hour.storeHourID,
       storeID: hour.storeID,
-      day: hour.day,
+      daysOpen: hour.daysOpen,
       openTime: hour.openTime,
       closeTime: hour.closeTime
     }));

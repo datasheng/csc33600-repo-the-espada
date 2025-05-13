@@ -33,6 +33,12 @@ import { useRouter } from 'next/navigation';
 
 import CustomListbox from '../components/CustomListbox';
 
+// Add this near the top of the file with other constants
+const DAYS_OF_WEEK = [
+  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+  'Friday', 'Saturday', 'Sunday'
+] as const;
+
 // Update CustomMarker interface to use storeID instead of id
 interface CustomMarker extends Marker {
   storeID?: number;  // Changed from string to number to match database
@@ -850,8 +856,8 @@ const MapComponent: React.FC = () => {
               
               {showHours && (
                 <div className={styles.hoursDropdown}>
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
-                    const hourData = hours.find(h => h.day === day);
+                  {DAYS_OF_WEEK.map((day) => {
+                    const hourData = hours.find(h => h.daysOpen === day);
                     return (
                       <div key={day} className={styles.hourRow}>
                         <span className={styles.dayName}>{day}</span>
