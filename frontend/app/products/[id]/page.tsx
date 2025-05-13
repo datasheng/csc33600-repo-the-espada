@@ -249,7 +249,7 @@ const ProductPage = () => {
                 <div className="mt-4">
                   {!isLoggedIn ? (
                     <button
-                      onClick={() => router.push('/login')}
+                      onClick={() => router.push(`/login?returnUrl=${encodeURIComponent(window.location.pathname)}`)}
                       className="w-full bg-black text-[#FFD700] border border-[#FFD700] px-4 py-2 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors"
                     >
                       Log In To Report Prices

@@ -43,7 +43,14 @@ export default function Login() {
             
             setError(null);
             setIsLoggedIn(true);
-            router.push("/");
+
+            // Get the return URL from query parameters
+            const params = new URLSearchParams(window.location.search);
+            const returnUrl = params.get('returnUrl');
+            
+            // Redirect to return URL if it exists, otherwise go to home
+            router.push(returnUrl || '/');
+
         } catch (err: any) {
             // Handle 401 Unauthorized specifically
             if (err.response?.status === 401) {

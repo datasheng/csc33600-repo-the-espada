@@ -77,7 +77,7 @@ const RatingSection: React.FC<{
               <StarRating rating={0} size="large" readonly />
             </div>
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push(`/login?returnUrl=${encodeURIComponent(window.location.pathname)}`)}
               className="w-full bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
             >
               Log In To Rate This Store

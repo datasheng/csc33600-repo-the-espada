@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Header.module.css';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   isLoggedIn: boolean; // Define the prop type
@@ -17,6 +18,7 @@ type ChainType = string | {
 };
 
 const Header: React.FC = () => {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
@@ -75,13 +77,29 @@ const Header: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(loggedInStatus);
+    const checkAuthStatus = () => {
+      const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(loggedInStatus);
+    };
+
+    // Check auth status initially
+    checkAuthStatus();
+
+    // Set up an interval to check auth status
+    const interval = setInterval(checkAuthStatus, 1000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userID");  // Remove any other auth-related items
     setIsLoggedIn(false);
+    
+    // Force a page refresh to clear any authenticated states
+    router.push('/');  // Redirect to home page
+    router.refresh();  // Force a refresh of the page
   };
 
   return (
