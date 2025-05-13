@@ -40,6 +40,12 @@ export interface StoreStatus {
   nextChange: string;
 }
 
+export interface PriceHistory {
+  full_name: string;
+  latest_price: number;
+  purchase_date: string;
+}
+
 // --------------------
 // Constants
 // --------------------
@@ -258,5 +264,19 @@ export async function fetchUserRating(storeID: number, userID: number): Promise<
   } catch (error) {
     console.error('❌ [fetchUserRating] Error:', error);
     return 0;
+  }
+}
+
+export async function fetchPriceHistory(productID: number): Promise<PriceHistory[]> {
+  try {
+    const response = await fetch(`http://localhost:5000/api/products/${productID}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch price history');
+    }
+    const data = await response.json();
+    return data.purchases || [];
+  } catch (error) {
+    console.error('Error fetching price history:', error);
+    return [];
   }
 }

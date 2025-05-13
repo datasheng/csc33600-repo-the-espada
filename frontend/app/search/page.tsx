@@ -14,7 +14,9 @@ import {
   getFormattedProductName,
   CHAIN_TYPES,
   CHAIN_COLORS,
-  GOLD_PURITIES
+  GOLD_PURITIES,
+  PriceHistory,
+  fetchPriceHistory
 } from '../data/stores';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -42,6 +44,9 @@ const SearchPage: React.FC = () => {
   // Add new state for price sorting
   const [priceSort, setPriceSort] = useState<"" | "lowToHigh" | "highToLow">("");
 
+  // Add priceHistory state
+  const [priceHistory, setPriceHistory] = useState<PriceHistory[]>([]);
+
   // Load stores and products
   useEffect(() => {
     const loadData = async () => {
@@ -51,6 +56,12 @@ const SearchPage: React.FC = () => {
       ]);
       setStores(storeData);
       setProducts(productData);
+      
+      // Add this line
+      if (productData.length > 0) {
+        const priceHistoryData = await fetchPriceHistory(productData[0].productID);
+        setPriceHistory(priceHistoryData);
+      }
     };
     loadData();
   }, []);
@@ -125,6 +136,23 @@ const SearchPage: React.FC = () => {
     setFilteredProducts(filtered);
     setShowResults(true);
   };
+
+  // Add getRelativeTimeString function
+  const getRelativeTimeString = (date: Date): string => {
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+  
+  if (diffInMinutes < 1) {
+    return 'just now';
+  }
+  
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+  }
+  
+  const hours = Math.floor(diffInMinutes / 60);
+  return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+};
 
   return (
     <div className="min-h-screen bg-white">
@@ -349,14 +377,15 @@ const SearchPage: React.FC = () => {
                       >
                         <div className="flex justify-between items-start">
                           <div>
+                            {/* Product details (name, store, etc.) */}
                             <h2 className="text-2xl text-white font-bold mb-2 tracking-tight">
                               {getFormattedProductName(product)}
                             </h2>
                             <Link 
-                              href={`/stores/${store.storeID}`} // Changed from id
+                              href={`/stores/${store.storeID}`}
                               className="text-xl font-bold text-[#FFD700] mb-2 italic hover:text-[#e6c200] transition-colors inline-block"
                             >
-                              {store.store_name} {/* Changed from name */}
+                              {store.store_name}
                             </Link>
                             <p className="text-gray-400 text-sm mb-2">
                               {store.address}
@@ -364,19 +393,51 @@ const SearchPage: React.FC = () => {
                             <StarRating 
                               rating={store.rating} 
                               size="medium"
-                              numReviews={store.rating_count} // Add this line
+                              numReviews={store.rating_count}
                             />
                           </div>
+
+                          {/* Vertical divider between product details and prices */}
+                          <div className="h-36 w-px bg-gray-600 mx-8"></div>
+
                           <div className="text-right flex flex-col items-end gap-4">
-                            <div className="text-3xl font-bold text-[#FFD700]">
-                              ${product.set_price.toLocaleString()}
+                            <div className="flex items-center gap-8">
+                              {/* Latest Price Report */}
+                              {priceHistory && priceHistory[0] ? (
+                                <div className="flex flex-col items-end gap-1">
+                                  <div className="text-white text-base">Latest Purchase By Users</div>
+                                  <div className="text-3xl font-bold text-[#FFD700]">
+                                    ${Number(priceHistory[0].latest_price).toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2
+                                    })}
+                                  </div>
+                                  <span className="text-gray-400 text-xl">By {priceHistory[0].full_name}</span>
+                                  <span className="text-gray-300 text-lg">
+                                  {getRelativeTimeString(new Date(priceHistory[0].purchase_date))}
+                                  </span>
+                                </div>
+                              ) : null}
+
+                              {/* Center divider between prices */}
+                              <div className="h-36 w-px bg-gray-600"></div>
+
+                              {/* Set Price and View Details */}
+                              <div className="flex flex-col items-end gap-4">
+                                <div>
+                                  <div className="text-white text-base mb-2">Price Set By Store</div>
+                                  <div className="text-3xl font-bold text-[#FFD700]">
+                                    ${product.set_price.toLocaleString()}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => router.push(`/products/${product.productID}`)}
+                                  className="bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
+                                >
+                                  View Details
+                                </button>
+                              </div>
                             </div>
-                            <button
-                              onClick={() => router.push(`/products/${product.productID}`)} // Changed from productId
-                              className="bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
-                            >
-                              View Details
-                            </button>
                           </div>
                         </div>
                       </motion.div>

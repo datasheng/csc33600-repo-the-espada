@@ -1,5 +1,8 @@
 from flask import Blueprint, jsonify, request
 from controllers.product_controller import ProductController
+from db import get_db_connection
+import pymysql.cursors
+import logging
 
 product_bp = Blueprint('product_bp', __name__)
 product_controller = ProductController()
@@ -26,11 +29,37 @@ def get_product(product_id):
             return jsonify({"error": "Product not found"}), 404
 
         purchases = product_controller.get_purchases(product_id)
-
-        return jsonify(product
-            # {"product": product, add these in to return latest and top purchases
-            # "top_purchases": purchases}
-            ), 200
+        
+        return jsonify({
+            "product": product,
+            "purchases": purchases
+        }), 200
     except Exception as e:
         print(f"Error getting product: {e}")
         return jsonify({"error": str(e)}), 500
+
+@product_bp.route('/api/products/<int:productID>/purchases', methods=['POST'])
+def submit_purchase(productID):
+    try:
+        data = request.get_json()
+        userID = data.get('userID')
+        storeID = data.get('storeID')
+        latest_price = data.get('latest_price')
+        purchase_date = data.get('purchase_date')
+
+        if not all([userID, productID, storeID, latest_price, purchase_date]):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        product_controller = ProductController()
+        success = product_controller.submit_purchase(
+            userID, productID, storeID, latest_price, purchase_date
+        )
+
+        if success:
+            return jsonify({'message': 'Purchase submitted successfully'}), 200
+        else:
+            return jsonify({'error': 'Failed to submit purchase'}), 500
+
+    except Exception as e:
+        print(f"Error submitting purchase: {e}")
+        return jsonify({'error': str(e)}), 500

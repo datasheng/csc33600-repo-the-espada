@@ -14,3 +14,8 @@
   background-color: #F44336;
   box-shadow: 0 0 8px rgba(244, 67, 54, 0.5);
 }
+
+.dateTimeInput::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
