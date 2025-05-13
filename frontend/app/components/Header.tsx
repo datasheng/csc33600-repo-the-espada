@@ -79,6 +79,11 @@ const Header: React.FC = () => {
     setIsLoggedIn(loggedInStatus);
   }, []);
 
+  const handleSignOut = () => {
+    localStorage.removeItem("isLoggedIn");
+    setIsLoggedIn(false);
+  };
+
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.logoLink}>
@@ -125,7 +130,7 @@ const Header: React.FC = () => {
                     ].map(purity => (
                       <Link 
                         key={purity.value} 
-                        href={`/search?filter=goldPurity&value=${purity.value}&showResults=true`} // Add showResults parameter
+                        href={`/search?filter=goldPurity&value=${purity.value}&showResults=true`}
                         className={`${styles.dropdownItem} ${purity.special ? styles.seeAllButton : ''}`}
                       >
                         {purity.label}
@@ -155,7 +160,7 @@ const Header: React.FC = () => {
                           return (
                             <Link 
                               key={displayName}
-                              href={`/search?filter=chainStyle&value=${linkValue}&showResults=true`} // Add showResults parameter
+                              href={`/search?filter=chainStyle&value=${linkValue}&showResults=true`}
                               className={styles.dropdownItem}
                             >
                               {displayName}
@@ -166,7 +171,7 @@ const Header: React.FC = () => {
                       <div className={styles.submenuColumn}>
                         {[
                           ...rightColumnTypes,
-                          { name: "See All", value: "", special: true } // Moved to end of right column
+                          { name: "See All", value: "", special: true }
                         ].map(type => {
                           const isSpecialType = typeof type !== 'string';
                           const displayName = isSpecialType ? type.name : type;
@@ -175,7 +180,7 @@ const Header: React.FC = () => {
                           return (
                             <Link 
                               key={displayName}
-                              href={`/search?filter=chainStyle&value=${linkValue}&showResults=true`} // Add showResults parameter
+                              href={`/search?filter=chainStyle&value=${linkValue}&showResults=true`}
                               className={`${styles.dropdownItem} ${isSpecialType && type.special ? styles.seeAllButton : ''}`}
                             >
                               {displayName}
@@ -195,16 +200,14 @@ const Header: React.FC = () => {
         <Link href="/contact-us" className={styles.navLink}>CONTACT</Link>
         {isLoggedIn ? (
           <>
+            <Link href="/dashboard" className={styles.navLink}>DASHBOARD</Link>
             <Link href="/profile" className={styles.authButton}>PROFILE</Link>
-            <Link href="/"
+            <button
+              onClick={handleSignOut}
               className={styles.authButton}
-              onClick={() => {
-                localStorage.removeItem("isLoggedIn"); // Clear login status
-                setIsLoggedIn(false); // Update state
-              }}
             >
               SIGN OUT
-            </Link>
+            </button>
           </>
         ) : (
           <>
