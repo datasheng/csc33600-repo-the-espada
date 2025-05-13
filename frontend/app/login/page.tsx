@@ -33,27 +33,24 @@ export default function Login() {
 
             console.log('Login response:', response.data);
             
-            // Check if response has user data
             if (!response.data?.user?.userID) {
                 console.error('Invalid response format:', response.data);
                 throw new Error('Invalid response from server');
             }
 
-            // Store both isLoggedIn and userId in localStorage
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("userId", response.data.user.userID.toString());
-            
-            console.log('Stored user data:', {
-                isLoggedIn: true,
-                userId: response.data.user.userID
-            });
             
             setError(null);
             setIsLoggedIn(true);
             router.push("/");
         } catch (err: any) {
-            console.error('Login error:', err);
-            setError(err.response?.data?.message || err.message || "An error occurred");
+            // Handle 401 Unauthorized specifically
+            if (err.response?.status === 401) {
+                setError("Wrong Email or Password. Try Again.");
+            } else {
+                setError("An error occurred. Please try again.");
+            }
             setResponse(null);
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("userId");

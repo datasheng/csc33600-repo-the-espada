@@ -11,7 +11,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Chain Checker",
+  title: "GoldLinks",
   description: "Compare jewelry prices across stores",
 };
 
