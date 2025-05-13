@@ -97,7 +97,7 @@ const Header: React.FC = () => {
             className={styles.dropdownButton}
             onClick={handleDropdownClick}
           >
-            Find Gold Chains
+            FIND GOLD CHAINS
             <span className={`${styles.dropdownArrow} ${isDropdownOpen ? styles.open : ''}`}>▼</span>
           </button>
           
@@ -190,12 +190,12 @@ const Header: React.FC = () => {
             </div>
           )}
         </div>
-        <Link href="/map" className={styles.navLink}>Map</Link>
-        <Link href="/about-us" className={styles.navLink}>About</Link>
-        <Link href="/contact-us" className={styles.navLink}>Contact</Link>
+        <Link href="/map" className={styles.navLink}>MAP</Link>
+        <Link href="/about-us" className={styles.navLink}>ABOUT</Link>
+        <Link href="/contact-us" className={styles.navLink}>CONTACT</Link>
         {isLoggedIn ? (
           <>
-            <Link href="/profile" className={styles.authButton}>Profile</Link>
+            <Link href="/profile" className={styles.authButton}>PROFILE</Link>
             <Link href="/"
               className={styles.authButton}
               onClick={() => {
@@ -203,13 +203,13 @@ const Header: React.FC = () => {
                 setIsLoggedIn(false); // Update state
               }}
             >
-              Sign Out
+              SIGN OUT
             </Link>
           </>
         ) : (
           <>
-            <Link href="/login" className={styles.authButton}>Login</Link>
-            <Link href="/signup" className={styles.authButton}>Sign Up</Link>
+            <Link href="/login" className={styles.authButton}>LOGIN</Link>
+            <Link href="/signup" className={styles.authButton}>SIGN UP</Link>
           </>
         )}
       </nav>

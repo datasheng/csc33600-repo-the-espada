@@ -132,13 +132,13 @@ const ProductPage = () => {
               </div>
             </div>
 
-            {/* Product Details */}
-            <div className="bg-white/10 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-[#FFD700] mb-4">
-                ${product.set_price.toLocaleString()}
-              </h2>
-              
-              <div>
+            {/* Product Details Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Specifications Container */}
+              <div className="bg-white/10 rounded-lg p-6">
+                <h2 className="text-2xl font-bold text-[#FFD700] mb-4">
+                  Price: ${product.set_price.toLocaleString()}
+                </h2>
                 <h3 className="text-gray-400 mb-2">Specifications</h3>
                 <ul className="space-y-2">
                   <li className="text-white">Purity: {product.chain_purity}</li>
@@ -148,6 +148,39 @@ const ProductPage = () => {
                   <li className="text-white">Length: {product.chain_length}in</li>
                   <li className="text-white">Weight: {product.chain_weight}g</li>
                 </ul>
+              </div>
+
+              {/* Latest Purchases Container */}
+              <div className="bg-white/10 rounded-lg p-6">
+                <h3 className="text-gray-400 mb-4">Latest Purchases</h3>
+                <div className="bg-black/30 rounded-lg overflow-hidden">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-black/50 text-gray-400">
+                        <th className="py-2 px-4 text-left text-sm font-semibold">User</th>
+                        <th className="py-2 px-4 text-left text-sm font-semibold">Date</th>
+                        <th className="py-2 px-4 text-left text-sm font-semibold">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-white/10 hover:bg-white/5">
+                        <td className="py-2 px-4 text-white text-sm">John Doe</td>
+                        <td className="py-2 px-4 text-gray-400 text-sm">2023-09-15</td>
+                        <td className="py-2 px-4 text-[#FFD700] font-bold text-sm">$199.99</td>
+                      </tr>
+                      <tr className="border-b border-white/10 hover:bg-white/5">
+                        <td className="py-2 px-4 text-white text-sm">Jane Smith</td>
+                        <td className="py-2 px-4 text-gray-400 text-sm">2023-09-14</td>
+                        <td className="py-2 px-4 text-[#FFD700] font-bold text-sm">$189.99</td>
+                      </tr>
+                      <tr className="border-b border-white/10 hover:bg-white/5">
+                        <td className="py-2 px-4 text-white text-sm">Alex Johnson</td>
+                        <td className="py-2 px-4 text-gray-400 text-sm">2023-09-13</td>
+                        <td className="py-2 px-4 text-[#FFD700] font-bold text-sm">$179.99</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 

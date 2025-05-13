@@ -86,7 +86,7 @@ export const GOLD_PURITIES = [
 // --------------------
 
 export const getFormattedProductName = (product: Product): string => {
-  return `${product.chain_purity} ${product.chain_color} Gold ${product.chain_type} Chain • ${product.chain_thickness}mm & ${product.chain_length}in`.trim();
+  return `${product.chain_purity} ${product.chain_color} Gold ${product.chain_type} Chain • ${product.chain_thickness} mm & ${product.chain_length} in`.trim();
 };
 
 export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
