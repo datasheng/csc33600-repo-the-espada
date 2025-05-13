@@ -425,7 +425,7 @@ const SearchPage: React.FC = () => {
                               {/* Set Price and View Details */}
                               <div className="flex flex-col items-end gap-4">
                                 <div>
-                                  <div className="text-white text-base mb-2">Price Set By Store</div>
+                                  <div className="text-white text-base mb-2">Retail Price</div>
                                   <div className="text-3xl font-bold text-[#FFD700]">
                                     ${product.set_price.toLocaleString()}
                                   </div>

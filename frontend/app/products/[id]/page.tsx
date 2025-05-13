@@ -197,7 +197,7 @@ const ProductPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white/10 rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-[#FFD700] mb-4">
-                  Store Price: ${product.set_price.toLocaleString()}
+                  Retail Price: ${product.set_price.toLocaleString()}
                 </h2>
                 <h3 className="text-gray-400 mb-2">Specifications</h3>
                 <ul className="space-y-2">

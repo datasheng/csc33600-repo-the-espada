@@ -17,8 +17,10 @@ import {
   getFormattedProductName,
   submitRating,
   fetchRatingDistribution,
-  RatingDistribution,  // Add this import
-  DAYS_OF_WEEK  // Add this import
+  RatingDistribution,
+  DAYS_OF_WEEK,
+  formatTimeForDisplay, // Add this import
+  parseTimeString // Add this import
 } from '../../data/stores';
 import styles from './StorePage.module.css';
 import { motion } from 'framer-motion';
@@ -263,8 +265,10 @@ const StoreContent: React.FC<{
                 </span>
                 <span className="text-white text-base">
                   {hourData 
-                    ? `${hourData.openTime} - ${hourData.closeTime}`
-                    : 'Closed'}
+                    ? hourData.openTime === 'CLOSED' || hourData.closeTime === 'CLOSED' 
+                      ? 'CLOSED'
+                      : `${formatTimeForDisplay(hourData.openTime)} - ${formatTimeForDisplay(hourData.closeTime)}`
+                    : 'CLOSED'}
                 </span>
               </div>
             );

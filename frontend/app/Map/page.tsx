@@ -16,7 +16,9 @@ import {
   CHAIN_TYPES,
   CHAIN_COLORS,
   GOLD_PURITIES,
-  getFormattedProductName
+  getFormattedProductName,
+  formatTimeForDisplay,  // Add this import
+  DAYS_OF_WEEK
 } from '../data/stores';
 
 // Change the import to use type-only import
@@ -32,12 +34,6 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 
 import CustomListbox from '../components/CustomListbox';
-
-// Add this near the top of the file with other constants
-const DAYS_OF_WEEK = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
-  'Friday', 'Saturday', 'Sunday'
-] as const;
 
 // Update CustomMarker interface to use storeID instead of id
 interface CustomMarker extends Marker {
@@ -789,11 +785,15 @@ const MapComponent: React.FC = () => {
                           <span className={styles.statusText}>
                             {getStoreStatus(hours).isOpen ? 'Open' : 'Closed'}
                           </span>
+                          <span className={styles.statusBullet}>•</span>
+                          <span className={styles.nextChange}>
+                            {getStoreStatus(hours).nextChange}
+                          </span>
                         </div>
                       )}
                       
                       <p className={styles.productPrice}>
-                        ${product.set_price.toLocaleString()}
+                        Retail Price: ${product.set_price.toLocaleString()}
                       </p>
                     </div>
                     <button
@@ -863,8 +863,10 @@ const MapComponent: React.FC = () => {
                         <span className={styles.dayName}>{day}</span>
                         <span>
                           {hourData 
-                            ? `${hourData.openTime} - ${hourData.closeTime}`
-                            : 'Closed'}
+                            ? hourData.openTime === 'CLOSED' || hourData.closeTime === 'CLOSED'
+                              ? 'CLOSED'
+                              : `${formatTimeForDisplay(hourData.openTime)} - ${formatTimeForDisplay(hourData.closeTime)}`
+                            : 'CLOSED'}
                         </span>
                       </div>
                     );

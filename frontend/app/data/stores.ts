@@ -115,10 +115,8 @@ export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  // Updated to use daysOpen instead of day
   const todayHours = hours.find(h => h.daysOpen === day);
 
-  // If this day isn't listed in hours or times are 'CLOSED', store is closed
   if (!todayHours || todayHours.openTime === 'CLOSED' || todayHours.closeTime === 'CLOSED') {
     return { isOpen: false, nextChange: 'Closed on ' + day };
   }
@@ -129,23 +127,46 @@ export const getStoreStatus = (hours: StoreHours[]): StoreStatus => {
 
   const isOpen = currentTime >= openTime && currentTime < closeTime;
   const nextChange = isOpen 
-    ? `Closes at ${todayHours.closeTime}` 
+    ? `Closes at ${formatTimeForDisplay(todayHours.closeTime)}` 
     : currentTime < openTime 
-      ? `Opens at ${todayHours.openTime}`
+      ? `Opens at ${formatTimeForDisplay(todayHours.openTime)}`
       : 'Currently Closed';
 
   return { isOpen, nextChange };
 };
 
 // Helper function to parse time strings
-const parseTimeString = (timeStr: string): number => {
-  if (timeStr === 'CLOSED') return -1;
-  
-  const [time, period] = timeStr.split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
-  if (period === 'PM' && hours !== 12) hours += 12;
-  if (period === 'AM' && hours === 12) hours = 0;
-  return hours * 60 + minutes;
+export const parseTimeString = (timeStr: string): number => {
+    if (!timeStr || timeStr === 'CLOSED') return -1;
+    
+    try {
+        // Remove seconds if present
+        timeStr = timeStr.split(':').slice(0, 2).join(':');
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        if (isNaN(hours) || isNaN(minutes)) return -1;
+        return hours * 60 + minutes;
+    } catch (error) {
+        console.error('Error parsing time string:', error);
+        return -1;
+    }
+};
+
+export const formatTimeForDisplay = (timeStr: string): string => {
+    if (!timeStr || timeStr === 'CLOSED') return 'CLOSED';
+    
+    try {
+        // Remove seconds if present
+        timeStr = timeStr.split(':').slice(0, 2).join(':');
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        if (isNaN(hours) || isNaN(minutes)) return 'CLOSED';
+        
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    } catch (error) {
+        console.error('Error formatting time string:', error);
+        return 'CLOSED';
+    }
 };
 
 export async function fetchStores(): Promise<Store[]> {
@@ -177,17 +198,19 @@ export async function fetchStores(): Promise<Store[]> {
 
 export async function fetchStoreHours(storeID: number): Promise<StoreHours[]> {
   try {
-    // Change from store-hours to stores/[id]/hours to match backend route
     const response = await fetch(`http://localhost:5000/api/stores/${storeID}/hours`);
-    if (!response.ok) throw new Error('Failed to fetch store hours');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch store hours');
+    }
     
     const hours = await response.json();
     return hours.map((hour: any) => ({
-      storeHourID: hour.storeHourID,
-      storeID: hour.storeID,
+      storeHourID: parseInt(hour.storeHourID),
+      storeID: parseInt(hour.storeID),
       daysOpen: hour.daysOpen,
-      openTime: hour.openTime,
-      closeTime: hour.closeTime
+      openTime: hour.openTime || 'CLOSED',
+      closeTime: hour.closeTime || 'CLOSED'
     }));
   } catch (error) {
     console.error('Error fetching store hours:', error);

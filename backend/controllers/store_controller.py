@@ -32,30 +32,6 @@ class StoreController:
             cursor.close()
             connection.close()
 
-    def get_store_hours(self, storeID: int) -> List[dict]:
-        connection = get_db_connection()
-        if connection is None:
-            raise Exception("Database connection failed")
-            
-        cursor = connection.cursor(pymysql.cursors.DictCursor)
-        try:
-            cursor.execute("""
-                SELECT storeHourID, storeID, daysOpen, 
-                       TIME_FORMAT(openTime, '%h:%i %p') as openTime,
-                       TIME_FORMAT(closeTime, '%h:%i %p') as closeTime
-                FROM store_hours 
-                WHERE storeID = %s
-                ORDER BY FIELD(daysOpen, 'Monday', 'Tuesday', 'Wednesday', 
-                             'Thursday', 'Friday', 'Saturday', 'Sunday')
-            """, (storeID,))
-            return cursor.fetchall()
-        except Exception as e:
-            print(f"Database error: {e}")
-            raise e
-        finally:
-            cursor.close()
-            connection.close()
-
     def get_store_by_id(self, storeID: int) -> Optional[dict]:
         connection = get_db_connection()
         if connection is None:
@@ -75,12 +51,12 @@ class StoreController:
             if store:
                 # Get store hours
                 cursor.execute("""
-                    SELECT storeHourID, storeID, day,
+                    SELECT storeHourID, storeID, daysOpen,
                            TIME_FORMAT(openTime, '%h:%i %p') as openTime,
                            TIME_FORMAT(closeTime, '%h:%i %p') as closeTime
                     FROM store_hours
                     WHERE storeID = %s
-                    ORDER BY FIELD(day, 'Monday', 'Tuesday', 'Wednesday',
+                    ORDER BY FIELD(daysOpen, 'Monday', 'Tuesday', 'Wednesday',
                                  'Thursday', 'Friday', 'Saturday', 'Sunday')
                 """, (storeID,))
                 store['hours'] = cursor.fetchall()
@@ -164,6 +140,51 @@ class StoreController:
             logger.error(f"Error updating store rating: {e}")
             connection.rollback()
             raise
+        finally:
+            cursor.close()
+            connection.close()
+
+    def get_store_hours(self, storeID: int) -> List[dict]:
+        connection = get_db_connection()
+        if connection is None:
+            raise Exception("Database connection failed")
+            
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+        try:
+            cursor.execute("""
+                SELECT 
+                    storeHourID,
+                    storeID,
+                    daysOpen,
+                    openTime,
+                    closeTime
+                FROM store_hours 
+                WHERE storeID = %s 
+                ORDER BY FIELD(daysOpen, 'Monday', 'Tuesday', 'Wednesday',
+                             'Thursday', 'Friday', 'Saturday', 'Sunday')
+            """, (storeID,))
+            
+            hours = cursor.fetchall()
+            
+            # Convert time objects to strings without formatting
+            formatted_hours = []
+            for hour in hours:
+                # If either time is NULL, both should be 'CLOSED'
+                is_closed = hour['openTime'] is None or hour['closeTime'] is None
+                formatted_hour = {
+                    'storeHourID': hour['storeHourID'],
+                    'storeID': hour['storeID'],
+                    'daysOpen': hour['daysOpen'],
+                    'openTime': 'CLOSED' if is_closed else str(hour['openTime']),
+                    'closeTime': 'CLOSED' if is_closed else str(hour['closeTime'])
+                }
+                formatted_hours.append(formatted_hour)
+                
+            return formatted_hours
+            
+        except Exception as e:
+            print(f"Database error: {e}")
+            raise e
         finally:
             cursor.close()
             connection.close()

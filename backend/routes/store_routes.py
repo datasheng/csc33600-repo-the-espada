@@ -28,6 +28,8 @@ def get_store(storeID):
 def get_store_hours(storeID):
     try:
         hours = store_controller.get_store_hours(storeID)
+        if not hours:
+            return jsonify([]), 200  # Return empty array if no hours found
         return jsonify(hours)
     except Exception as e:
         print(f"Error getting store hours: {e}")
