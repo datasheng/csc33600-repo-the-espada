@@ -91,8 +91,37 @@ export default function Subscription() {
         localStorage.setItem('billingInfo', JSON.stringify(billingInfo));
         localStorage.setItem('selectedPlan', selectedTier || '');
         
-        // Redirect to business profile setup
-        router.push('/business-setup');
+        try {
+            const response = await fetch('http://localhost:5000/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    username: `${signupData.firstName} ${signupData.lastName}`,
+                    email: signupData.email,
+                    password: signupData.password,
+                    account_type: 'business',
+                    store_name: signupData.store_name || 'My Store',
+                    store_address: signupData.store_address || '123 Business St'
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Store login state
+                localStorage.setItem('isLoggedIn', 'true');
+                // Redirect to business profile setup
+                router.push('/business-setup');
+            } else {
+                alert(data.error || 'Signup failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            alert('An error occurred during signup. Please try again.');
+        }
     };
 
     return (

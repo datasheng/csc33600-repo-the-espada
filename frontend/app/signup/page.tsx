@@ -85,9 +85,35 @@ export default function Signup() {
             localStorage.setItem('signupData', JSON.stringify(formData));
             router.push('/subscription');
         } else {
-            // Handle regular consumer signup
-            // Add your signup logic here
-            console.log('Consumer signup:', formData);
+            try {
+                const response = await fetch('http://localhost:5000/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: `${formData.firstName} ${formData.lastName}`,
+                        email: formData.email,
+                        password: formData.password,
+                        account_type: 'consumer'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store login state
+                    localStorage.setItem('isLoggedIn', 'true');
+                    // Redirect to home page
+                    router.push('/');
+                } else {
+                    alert(data.error || 'Signup failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                alert('An error occurred during signup. Please try again.');
+            }
         }
     };
 

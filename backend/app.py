@@ -5,7 +5,7 @@ from routes.store_routes import store_bp
 from routes.product_routes import product_bp
 from routes.auth_routes import auth_bp
 from routes.report_routes import report_bp
-from routes.store_hours_routes import store_hours_bp  # Add this import
+from routes.store_hours_routes import store_hours_bp
 from routes.signup_routes import signup_bp
 from routes.rating_routes import rating_bp
 
@@ -15,15 +15,17 @@ app.config.from_object(Config)
 CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
 
 # Import and register blueprints
-app.register_blueprint(store_bp) #url_prefix=Config.API_PREFIX removed
+app.register_blueprint(store_bp)
 app.register_blueprint(product_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(report_bp)
-app.register_blueprint(store_hours_bp)  # Register the new blueprint
+app.register_blueprint(store_hours_bp)
 app.register_blueprint(signup_bp)
 app.register_blueprint(rating_bp)
 
 if __name__ == '__main__':
     app.run(
+        host='localhost',
+        port=5000,
         debug=True
     )

@@ -21,7 +21,8 @@ CREATE TABLE users (
     userID INTEGER AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50),
     user_password VARCHAR(255),
-    email VARCHAR(50) UNIQUE
+    email VARCHAR(50) UNIQUE,
+    account_type ENUM('consumer', 'business') DEFAULT 'consumer'
 );
 
 CREATE TABLE store_owners (
