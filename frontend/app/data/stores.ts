@@ -46,6 +46,15 @@ export interface PriceHistory {
   purchase_date: string;
 }
 
+export interface RatingDistribution {
+  [key: number]: number;  // Add index signature
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+  5: number;
+}
+
 // --------------------
 // Constants
 // --------------------
@@ -278,5 +287,19 @@ export async function fetchPriceHistory(productID: number): Promise<PriceHistory
   } catch (error) {
     console.error('Error fetching price history:', error);
     return [];
+  }
+}
+
+export async function fetchRatingDistribution(storeID: number): Promise<RatingDistribution> {
+  try {
+    const response = await fetch(`http://localhost:5000/api/ratings/${storeID}/distribution`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch rating distribution');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching rating distribution:', error);
+    return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   }
 }

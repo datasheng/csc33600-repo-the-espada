@@ -179,12 +179,12 @@ const SearchPage: React.FC = () => {
                       { id: 'Cable', name: 'CABLE', image: '/chaindisplay/cable.png' },
                       { id: 'Figaro', name: 'FIGARO', image: '/chaindisplay/figaro.png' },
                       { id: 'Figarope', name: 'FIGAROPE', image: '/chaindisplay/figarope.png' },
-                      { id: 'FlatCurb', name: 'FLAT CURB', image: '/chaindisplay/flat-curb.png' },
+                      { id: 'Flat Curb', name: 'FLAT CURB', image: '/chaindisplay/flat-curb.png' },
                       { id: 'Franco', name: 'FRANCO', image: '/chaindisplay/franco.png' },
                       { id: 'Herringbone', name: 'HERRINGBONE', image: '/chaindisplay/herringbone.png' },
                       { id: 'Mariner', name: 'MARINER', image: '/chaindisplay/mariner.png' },
-                      { id: 'MiamiCuban', name: 'MIAMI CUBAN', image: '/chaindisplay/miami-cuban.png' },
-                      { id: 'MoonCut', name: 'MOON CUT', image: '/chaindisplay/moon-cut.png' },
+                      { id: 'Miami Cuban', name: 'MIAMI CUBAN', image: '/chaindisplay/miami-cuban.png' },
+                      { id: 'Moon Cut', name: 'MOON CUT', image: '/chaindisplay/moon-cut.png' },
                       { id: 'Rope', name: 'ROPE', image: '/chaindisplay/rope.png' },
                       { id: 'Wheat', name: 'WHEAT', image: '/chaindisplay/wheat.png' }
                     ].map((chain) => (

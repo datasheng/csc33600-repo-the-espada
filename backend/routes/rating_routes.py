@@ -113,3 +113,38 @@ def get_user_rating(storeID, userID):
             cursor.close()
         if connection:
             connection.close()
+
+@rating_bp.route('/api/ratings/<int:storeID>/distribution', methods=['GET'])
+def get_rating_distribution(storeID):
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+        
+        cursor.execute("""
+            SELECT rating, COUNT(*) as count
+            FROM user_update
+            WHERE storeID = %s AND rating IS NOT NULL
+            GROUP BY rating
+        """, (storeID,))
+        
+        results = cursor.fetchall()
+        
+        # Initialize distribution with zeros
+        distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        
+        # Update with actual counts
+        for row in results:
+            distribution[int(row['rating'])] = row['count']
+            
+        return jsonify(distribution), 200
+
+    except Exception as e:
+        print(f"Error fetching rating distribution: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()

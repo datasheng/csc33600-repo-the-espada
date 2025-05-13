@@ -12,10 +12,12 @@ import {
   fetchStores,
   fetchStoreHours,
   fetchProducts,
-  fetchUserRating,  // Add this import
+  fetchUserRating,
   getStoreStatus, 
   getFormattedProductName,
-  submitRating
+  submitRating,
+  fetchRatingDistribution,
+  RatingDistribution  // Add this import
 } from '../../data/stores';
 import styles from './StorePage.module.css';
 import { motion } from 'framer-motion';
@@ -44,7 +46,8 @@ const RatingSection: React.FC<{
   userRating: number;
   onRatingSubmit: (rating: number) => Promise<void>;
   isSubmitting: boolean;
-}> = ({ rating, userRating, onRatingSubmit, isSubmitting }) => {
+  ratingDistribution: RatingDistribution;  // Add this prop
+}> = ({ rating, userRating, onRatingSubmit, isSubmitting, ratingDistribution }) => {
   const router = useRouter();
   const [currentUserRating, setCurrentUserRating] = useState(userRating);
   const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem('isLoggedIn') === 'true';
@@ -66,40 +69,94 @@ const RatingSection: React.FC<{
 
   if (!isLoggedIn) {
     return (
-      <div className="bg-white/10 rounded-lg p-6">
-        <h3 className="text-xl text-white font-bold mb-4">Rate this Store</h3>
-        <div className="space-y-4">
-          <div className="flex flex-col items-start gap-2">
-            <label className="text-gray-400">Your Rating:</label>
-            <StarRating rating={0} size="large" readonly />
+      <div className="flex gap-8">
+        {/* Login Required Box */}
+        <div className="bg-white/10 rounded-lg p-6 w-[40%]">
+          <h3 className="text-xl text-white font-bold mb-4">Rate this Store</h3>
+          <div className="space-y-4">
+            <div className="flex flex-col items-start gap-2">
+              <label className="text-gray-400">Your Rating:</label>
+              <StarRating rating={0} size="large" readonly />
+            </div>
+            <button
+              onClick={() => router.push('/login')}
+              className="w-full bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
+            >
+              Log In To Rate This Store
+            </button>
           </div>
-          <button
-            onClick={() => router.push('/login')}
-            className="w-full bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
-          >
-            Log In To Rate This Store
-          </button>
+        </div>
+
+        {/* Rating Distribution Box - Same as logged in version */}
+        <div className="bg-white/10 rounded-lg p-6 w-[60%]">
+          <h3 className="text-xl text-white font-bold mb-4">Rating Distribution</h3>
+          <div className="space-y-2">
+            {[5, 4, 3, 2, 1].map((stars) => (
+              <div key={stars} className="flex items-center gap-2">
+                <span className="text-gray-400 w-16">{stars} Stars</span>
+                <div className="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#FFD700] rounded-full"
+                    style={{ 
+                      width: `${(ratingDistribution[stars as keyof RatingDistribution] / 
+                        Object.values(ratingDistribution).reduce((a, b) => a + b, 0)) * 100}%` 
+                    }}
+                  />
+                </div>
+                <span className="text-gray-400 w-8 text-right">
+                  {ratingDistribution[stars as keyof RatingDistribution]}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white/10 rounded-lg p-6">
-      <h3 className="text-xl text-white font-bold mb-4">Rate this Store</h3>
-      <div className="space-y-4">
-        <div className="flex flex-col items-start gap-2">
-          <label className="text-gray-400">Your Rating:</label>
-          <StarRating 
-            rating={currentUserRating}
-            size="large"
-            onRatingSubmit={handleRatingChange}
-            readonly={isSubmitting}
-          />
+    <div className="flex gap-8">
+      {/* Your Rating Box */}
+      <div className="bg-white/10 rounded-lg p-6 w-[40%] flex flex-col justify-center"> {/* Added flex and justify-center */}
+        <div className="flex flex-col items-center gap-4"> {/* Increased gap and made it a flex container */}
+          <h3 className="text-xl text-white font-bold text-center">Rate this Store</h3>
+          <div className="flex flex-col items-center gap-3"> {/* Increased gap */}
+            <label className="text-gray-400">Your Rating:</label>
+            <StarRating 
+              rating={currentUserRating}
+              size="large"
+              onRatingSubmit={handleRatingChange}
+              readonly={isSubmitting}
+            />
+            {isSubmitting && (
+              <p className="text-[#FFD700] text-sm text-center">Submitting your rating...</p>
+            )}
+          </div>
         </div>
-        {isSubmitting && (
-          <p className="text-[#FFD700] text-sm">Submitting your rating...</p>
-        )}
+      </div>
+
+      {/* Rating Distribution Box */}
+      <div className="bg-white/10 rounded-lg p-6 w-[60%]">
+        <h3 className="text-xl text-white font-bold mb-4">Rating Distribution</h3>
+        <div className="space-y-2">
+          {[5, 4, 3, 2, 1].map((stars) => (
+            <div key={stars} className="flex items-center gap-2">
+              <span className="text-gray-400 w-16">{stars} Stars</span>
+              <div className="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[#FFD700] rounded-full"
+                  style={{ 
+                    width: `${(ratingDistribution[stars as keyof RatingDistribution] / 
+                      Object.values(ratingDistribution).reduce((a, b) => a + b, 0)) * 100}%` 
+                    }}
+                />
+              </div>
+              <span className="text-gray-400 w-8 text-right">
+                {ratingDistribution[stars as keyof RatingDistribution]}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -113,7 +170,8 @@ const StoreContent: React.FC<{
   onRatingSubmit: (rating: number) => Promise<void>;
   isSubmitting: boolean;
   userRating: number;
-}> = ({ store, hours, products, onRatingSubmit, isSubmitting, userRating }) => {
+  ratingDistribution: RatingDistribution;  // Add this prop
+}> = ({ store, hours, products, onRatingSubmit, isSubmitting, userRating, ratingDistribution }) => {
   console.log('[StoreContent] Received userRating:', userRating);
   
   const { isOpen, nextChange } = getStoreStatus(hours);
@@ -121,9 +179,9 @@ const StoreContent: React.FC<{
   return (
     <div className="bg-black rounded-lg p-8 shadow-xl">
       {/* Store Header */}
-      <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="mb-8 grid grid-cols-1 lg:grid-cols-5 gap-8"> {/* Changed from cols-3 to cols-5 */}
         {/* Store Info - Takes up 2 columns */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2"> {/* Changed from col-span-1 to col-span-2 */}
           <h1 className="text-4xl text-[#FFD700] font-bold mb-4 tracking-tight">
             {store.store_name}
           </h1>
@@ -175,13 +233,14 @@ const StoreContent: React.FC<{
           </div>
         </div>
 
-        {/* Rating Section - Takes up 1 column */}
-        <div className="lg:col-span-1">
+        {/* Rating Sections - Takes up 3 columns */}
+        <div className="lg:col-span-3"> {/* Changed from col-span-2 to col-span-3 */}
           <RatingSection
             rating={store.rating}
             userRating={userRating} // Pass user's personal rating
             onRatingSubmit={onRatingSubmit}
             isSubmitting={isSubmitting}
+            ratingDistribution={ratingDistribution}
           />
         </div>
       </div>
@@ -221,7 +280,7 @@ const StoreContent: React.FC<{
           <Link
             href={{
               pathname: '/map',
-              query: { storeId: store.storeID }
+              query: { storeID: store.storeID }
             }}
             className="bg-black text-[#FFD700] border border-[#FFD700] px-6 py-3 rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors w-full text-center"
           >
@@ -271,6 +330,9 @@ const StorePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userPersonalRating, setUserPersonalRating] = useState<number>(0);
+  const [ratingDistribution, setRatingDistribution] = useState<RatingDistribution>({ 
+    1: 0, 2: 0, 3: 0, 4: 0, 5: 0 
+  });
   const params = useParams();
   const storeId = params.id as string;
   const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem('isLoggedIn') === 'true';
@@ -306,12 +368,12 @@ const StorePage: React.FC = () => {
       // Refresh store data to get updated rating
       await refreshStoreData();
       
-      // Show success toast or message
-      // You can add a toast notification here if desired
+      // Fetch updated rating distribution
+      const newDistribution = await fetchRatingDistribution(store.storeID);
+      setRatingDistribution(newDistribution);
       
     } catch (error) {
       console.error('Failed to submit rating:', error);
-      // Show error message to user
     } finally {
       setIsSubmitting(false);
     }
@@ -357,6 +419,10 @@ const StorePage: React.FC = () => {
         setStore(storeData);
         setHours(hoursData);
         setProducts(storeProducts);
+
+        // Fetch rating distribution
+        const distribution = await fetchRatingDistribution(storeData.storeID);
+        setRatingDistribution(distribution);
 
         // Only fetch user rating if user is logged in and we have a userId
         if (isLoggedIn && storedUserId) {
@@ -407,6 +473,7 @@ const StorePage: React.FC = () => {
                 onRatingSubmit={handleRatingSubmit}
                 isSubmitting={isSubmitting}
                 userRating={userPersonalRating}
+                ratingDistribution={ratingDistribution} // Use actual distribution
               />
             ) : null}
           </Suspense>

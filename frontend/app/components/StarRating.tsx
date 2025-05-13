@@ -101,7 +101,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
       </div>
       {numReviews !== undefined && (
         <span className={styles.reviewCount}>
-          ({numReviews} ratings)
+          ({numReviews} Ratings)
         </span>
       )}
     </div>
