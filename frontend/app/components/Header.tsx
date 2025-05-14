@@ -78,31 +78,58 @@ const Header: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const checkAuthStatus = () => {
+    const checkAuthStatus = async () => {
       const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
       const role = localStorage.getItem("userRole");
+      const ownerID = localStorage.getItem("ownerID");
+      
       setIsLoggedIn(loggedInStatus);
-      setUserRole(role);
+
+      if (loggedInStatus) {
+        if (role === 'business') {
+          // For business users
+          if (ownerID) {
+            // Business user with store - show dashboard only
+            setUserRole('business');
+            
+            // If they try to access profile page, redirect to dashboard
+            if (window.location.pathname === '/profile') {
+              router.replace('/dashboard');
+            }
+          } else {
+            // Business user without store - redirect to setup
+            setUserRole('shopper'); // Temporarily set as shopper until setup complete
+            router.replace('/business-setup');
+          }
+        } else {
+          // For regular shoppers
+          setUserRole('shopper');
+          
+          // If they try to access dashboard, redirect to profile
+          if (window.location.pathname === '/dashboard') {
+            router.replace('/profile');
+          }
+        }
+      } else {
+        setUserRole(null);
+      }
     };
 
-    // Check auth status initially
     checkAuthStatus();
-
-    // Set up an interval to check auth status
     const interval = setInterval(checkAuthStatus, 1000);
-
-    // Clean up interval on unmount
     return () => clearInterval(interval);
-  }, []);
+  }, [router]);
 
   const handleSignOut = () => {
     localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userID");  // Remove any other auth-related items
+    localStorage.removeItem("userID");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("ownerID"); // Add this line to clear ownerID
     setIsLoggedIn(false);
+    setUserRole(null); // Add this line to reset userRole state
     
-    // Force a page refresh to clear any authenticated states
-    router.push('/');  // Redirect to home page
-    router.refresh();  // Force a refresh of the page
+    router.push('/');
+    router.refresh();
   };
 
   return (
@@ -221,7 +248,7 @@ const Header: React.FC = () => {
         <Link href="/contact-us" className={styles.navLink}>CONTACT</Link>
         {isLoggedIn ? (
           <>
-            {userRole === 'business' ? (
+            {userRole === 'business' && localStorage.getItem('ownerID') ? (
               <Link href="/dashboard" className={styles.navLink}>DASHBOARD</Link>
             ) : (
               <Link href="/profile" className={styles.authButton}>PROFILE</Link>

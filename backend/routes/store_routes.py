@@ -99,3 +99,102 @@ def create_store():
     finally:
         if cursor: cursor.close()
         if connection: connection.close()
+
+@store_bp.route('/api/stores/<int:storeID>/hours', methods=['PUT'])
+def update_store_hours(storeID):
+    connection = None
+    cursor = None
+
+    try:
+        data = request.get_json()
+        hours = data.get('hours', [])
+        
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # Start transaction
+        connection.begin()
+
+        try:
+            # Delete existing hours
+            cursor.execute("DELETE FROM store_hours WHERE storeID = %s", (storeID,))
+            
+            # Insert new hours
+            for hour in hours:
+                cursor.execute("""
+                    INSERT INTO store_hours (storeID, daysOpen, openTime, closeTime)
+                    VALUES (%s, %s, %s, %s)
+                """, (
+                    storeID,
+                    hour['daysOpen'],
+                    hour['openTime'],
+                    hour['closeTime']
+                ))
+
+            connection.commit()
+            return jsonify({'message': 'Store hours updated successfully'}), 200
+
+        except Exception as e:
+            connection.rollback()
+            raise e
+
+    except Exception as e:
+        print("Error updating store hours:", e)
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        if cursor: cursor.close()
+        if connection: connection.close()
+
+@store_bp.route('/api/stores/<int:storeID>', methods=['PUT'])
+def update_store(storeID):
+    try:
+        data = request.get_json()
+        field = data.get('field')
+        value = data.get('value')
+
+        if not all([field, value]):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+        # Map frontend field names to database column names
+        field_mapping = {
+            'name': 'store_name',
+            'address': 'address',
+            'latitude': 'latitude',
+            'longitude': 'longitude',
+            'phone': 'phone',
+            'email': 'email'
+        }
+
+        db_field = field_mapping.get(field)
+        if not db_field:
+            return jsonify({'error': 'Invalid field'}), 400
+
+        # Update the specified field
+        cursor.execute(f"""
+            UPDATE store 
+            SET {db_field} = %s
+            WHERE storeID = %s
+        """, (value, storeID))
+        
+        connection.commit()
+
+        # Return updated store data
+        cursor.execute("""
+            SELECT * FROM store WHERE storeID = %s
+        """, (storeID,))
+        
+        updated_store = cursor.fetchone()
+        return jsonify(updated_store), 200
+
+    except Exception as e:
+        print(f"Error updating store: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()

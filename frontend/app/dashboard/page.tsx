@@ -61,6 +61,7 @@ export default function Dashboard() {
     const [selectedStore, setSelectedStore] = useState<number | null>(null);
     const [hours, setHours] = useState<StoreHours[]>([]);
     const [store, setStore] = useState<DashboardStore | null>(null);
+    const [showHoursEditor, setShowHoursEditor] = useState(false);
 
     useEffect(() => {
         const role = localStorage.getItem('userRole');
@@ -92,7 +93,10 @@ export default function Dashboard() {
                 setStore(ownerStore);
                 setSelectedStore(ownerStore.storeID);
                 
-                // Update localStorage with confirmed store data
+                // Fetch and set store hours immediately when store is found
+                const hoursData = await fetchStoreHours(ownerStore.storeID);
+                setHours(hoursData);
+                
                 localStorage.setItem('businessInfo', JSON.stringify(ownerStore));
                 localStorage.setItem('completedSetup', 'true');
 
@@ -113,8 +117,6 @@ export default function Dashboard() {
                 const ownerStore = storesData.find(s => s.ownerID === parseInt(ownerID || ''));
                 if (ownerStore) {
                     setStore(ownerStore);
-                    const hoursData = await fetchStoreHours(ownerStore.storeID);
-                    setHours(hoursData);
                 }
             } catch (err) {
                 console.error(err);
@@ -324,12 +326,58 @@ export default function Dashboard() {
                                     </div>
                                     <div className="mt-6">
                                         <button
-                                            onClick={() => router.push('/store-hours')}
+                                            onClick={() => setShowHoursEditor(true)}
                                             className="w-full bg-[#FFD700] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
                                         >
                                             Edit Store Hours
                                         </button>
                                     </div>
+
+                                    {/* Hours Editor Modal */}
+                                    {showHoursEditor && (
+                                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"> {/* Increased z-index */}
+                                            <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                                                <div className="p-6">
+                                                    <div className="flex justify-between items-center mb-6">
+                                                        <h3 className="text-xl font-bold text-gray-900">Edit Store Hours</h3>
+                                                        <button 
+                                                            onClick={() => setShowHoursEditor(false)}
+                                                            className="text-gray-500 hover:text-gray-700"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <StoreHoursEditor
+                                                        storeID={store.storeID}
+                                                        initialHours={hours}
+                                                        onSave={async (updatedHours) => {
+                                                            try {
+                                                                // Update hours in backend
+                                                                const response = await fetch(`http://localhost:5000/api/stores/${store.storeID}/hours`, {
+                                                                    method: 'PUT',
+                                                                    headers: {
+                                                                        'Content-Type': 'application/json',
+                                                                    },
+                                                                    body: JSON.stringify({ hours: updatedHours })
+                                                                });
+
+                                                                if (!response.ok) throw new Error('Failed to update hours');
+
+                                                                // Refresh hours data
+                                                                const newHours = await fetchStoreHours(store.storeID);
+                                                                setHours(newHours);
+                                                                setShowHoursEditor(false);
+                                                            } catch (error) {
+                                                                console.error('Error updating hours:', error);
+                                                            }
+                                                        }}
+                                                        onCancel={() => setShowHoursEditor(false)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -341,46 +389,15 @@ export default function Dashboard() {
 
     const renderProducts = () => (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Products</h2>
-                <button
-                    onClick={() => router.push('/products/new')}
-                    className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-300"
-                >
-                    Add New Product
-                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map(product => (
-                    <div key={product.productID} className="bg-white rounded-lg shadow overflow-hidden">
-                        <div className="p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                {`${product.chain_purity} ${product.chain_color} Gold ${product.chain_type} Chain`}
-                            </h3>
-                            <div className="space-y-2 text-gray-600">
-                                <p>Thickness: {product.chain_thickness}mm</p>
-                                <p>Length: {product.chain_length}in</p>
-                                <p>Weight: {product.chain_weight}g</p>
-                                <p className="text-xl font-bold text-yellow-400 mt-4">
-                                    ${product.set_price.toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    })}
-                                </p>
-                            </div>
-                            <div className="mt-4">
-                                <button
-                                    onClick={() => router.push(`/products/${product.productID}`)}
-                                    className="text-yellow-400 hover:text-yellow-500"
-                                >
-                                    Edit
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            {store && (
+                <ProductPriceEditor 
+                    storeID={store.storeID} 
+                />
+            )}
         </div>
     );
 

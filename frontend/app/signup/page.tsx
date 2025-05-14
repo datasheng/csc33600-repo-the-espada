@@ -97,9 +97,18 @@ export default function Signup() {
             return;
         }
 
-        // Check for existing email first regardless of user type
         try {
-            const checkEmailResponse = await fetch('http://localhost:5000/api/signup', {
+            // For Business users, skip database signup and go straight to subscription
+            if (userRole === 'Business') {
+                localStorage.setItem('signupData', JSON.stringify(formData));
+                localStorage.setItem('userRole', 'business');
+                localStorage.removeItem('completedSubscription');
+                router.push('/subscription');
+                return;
+            }
+
+            // Only make API call for Shopper signup
+            const response = await fetch('http://localhost:5000/api/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,31 +122,23 @@ export default function Signup() {
                 credentials: 'include'
             });
 
-            const data = await checkEmailResponse.json();
+            const data = await response.json();
 
-            if (checkEmailResponse.status === 409) {
+            if (response.status === 409) {
                 setError('This email is already registered. Please use a different email or log in.');
                 return;
             }
 
-            // If email is unique, proceed with the appropriate flow
-            if (userRole === 'Business') {
-                localStorage.setItem('signupData', JSON.stringify(formData));
-                localStorage.setItem('userRole', 'business');
-                localStorage.removeItem('completedSubscription');
-                router.push('/subscription');
-            } else {
-                // For regular signup, we already have the response
-                if (!checkEmailResponse.ok) {
-                    throw new Error(data.error || 'Signup failed');
-                }
-
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userId', data.user.userID.toString());
-                localStorage.setItem('userRole', 'shopper');
-                
-                router.push('/');
+            if (!response.ok) {
+                throw new Error(data.error || 'Signup failed');
             }
+
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userId', data.user.userID.toString());
+            localStorage.setItem('userRole', 'shopper');
+            
+            router.push('/');
+
         } catch (error: any) {
             console.error('Signup error:', error);
             setError(error.message || 'An error occurred during signup');

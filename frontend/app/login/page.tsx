@@ -38,8 +38,13 @@ export default function Login() {
                 throw new Error('Invalid response from server');
             }
 
+            // Store all relevant user data
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("userId", response.data.user.userID.toString());
+            localStorage.setItem("userRole", response.data.user.role);
+            if (response.data.user.ownerID) {
+                localStorage.setItem("ownerID", response.data.user.ownerID.toString());
+            }
             
             setError(null);
             setIsLoggedIn(true);
@@ -48,8 +53,12 @@ export default function Login() {
             const params = new URLSearchParams(window.location.search);
             const returnUrl = params.get('returnUrl');
             
-            // Redirect to return URL if it exists, otherwise go to home
-            router.push(returnUrl || '/');
+            // Redirect based on user role
+            if (response.data.user.role === 'business' && response.data.user.ownerID) {
+                router.push('/dashboard');
+            } else {
+                router.push(returnUrl || '/');
+            }
 
         } catch (err: any) {
             // Handle 401 Unauthorized specifically

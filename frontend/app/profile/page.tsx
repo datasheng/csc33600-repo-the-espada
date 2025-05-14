@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from 'next/navigation' // Add this line
 import { useForm } from "react-hook-form"
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
@@ -26,32 +27,123 @@ const defaultValues: FormValues = {
 }
 
 export default function ProfileEditForm() {
-  const [submittingField, setSubmittingField] = useState<keyof FormValues | null>(null)
+  const router = useRouter(); // Add this line
+  const [submittingField, setSubmittingField] = useState<keyof FormValues | null>(null);
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: ""
+  });
 
   const form = useForm<FormValues>({
     defaultValues,
     mode: "onBlur",
-  })
+  });
 
-  const handleFieldSubmit = async (fieldName: keyof FormValues) => {
-    setSubmittingField(fieldName)
+  // Add fetchUserData function
+  const fetchUserData = async () => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        router.replace('/signup');
+        return;
+      }
 
-      toast({
-        title: `${fieldName} updated`,
-        description: `Your ${fieldName} has been updated successfully.`,
-      })
+      const response = await fetch(`http://localhost:5000/api/users/${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+
+      const data = await response.json();
+      setUserData({
+        firstName: data.first_name,
+        lastName: data.last_name,
+        email: data.email
+      });
+
+      // Update form with fetched data
+      form.reset({
+        firstName: data.first_name,
+        lastName: data.last_name,
+        email: data.email,
+        password: ""
+      });
+
     } catch (error) {
+      console.error('Error fetching user data:', error);
       toast({
         title: "Error",
-        description: `There was a problem updating ${fieldName}.`,
-        variant: "destructive",
-      })
-    } finally {
-      setSubmittingField(null)
+        description: "Failed to load user data",
+        variant: "destructive"
+      });
     }
-  }
+  };
+
+  // Add useEffect to fetch data on component mount
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  // Update handleFieldSubmit
+  const handleFieldSubmit = async (fieldName: keyof FormValues) => {
+    setSubmittingField(fieldName);
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) throw new Error('User ID not found');
+
+      const formData = form.getValues();
+      const value = formData[fieldName];
+
+      // Check for blank value
+      if (!value || value.trim() === '') {
+        toast({
+          title: "Error",
+          description: "Please enter a value before updating",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          field: fieldName,
+          value: value
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to update user data');
+
+      const updatedUser = await response.json();
+      
+      // Update local state
+      setUserData({
+        firstName: updatedUser.first_name,
+        lastName: updatedUser.last_name,
+        email: updatedUser.email
+      });
+
+      toast({
+        title: "Success",
+        description: `Your ${
+          fieldName === "firstName" ? "first name" :
+          fieldName === "lastName" ? "last name" :
+          fieldName === "email" ? "email address" :
+          "password"
+        } has been updated successfully.`,
+      });
+    } catch (error) {
+      console.error('Update error:', error);
+      toast({
+        title: "Error",
+        description: `There was a problem updating your ${fieldName}.`,
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingField(null);
+    }
+  };
 
   return (
     <>
@@ -71,11 +163,13 @@ export default function ProfileEditForm() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-gray-400 text-sm">Full Name</p>
-                    <p className="text-white text-lg">John Doe</p>
+                    <p className="text-white text-lg">
+                      {userData.firstName} {userData.lastName}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Email</p>
-                    <p className="text-white text-lg">johndoe@example.com</p>
+                    <p className="text-white text-lg">{userData.email}</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Account Type</p>
@@ -234,9 +328,7 @@ export default function ProfileEditForm() {
                       <FormField
                         control={form.control}
                         name="password"
-                        rules={{
-                          required: "Password is required",
-                        }}
+                        rules={{}}  // Remove all validation rules
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-300">New Password</FormLabel>

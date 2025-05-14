@@ -119,3 +119,88 @@ def create_product():
     except Exception as e:
         print(f"Error creating product: {e}")
         return jsonify({'error': str(e)}), 500
+
+@product_bp.route('/api/products/<int:productID>', methods=['PUT'])
+def update_product(productID):
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['chain_type', 'chain_purity', 'chain_thickness', 
+                         'chain_length', 'chain_color', 'chain_weight', 'set_price']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+        try:
+            # Update product
+            cursor.execute("""
+                UPDATE product 
+                SET chain_type = %s, 
+                    chain_purity = %s, 
+                    chain_thickness = %s,
+                    chain_length = %s, 
+                    chain_color = %s, 
+                    chain_weight = %s, 
+                    set_price = %s
+                WHERE productID = %s
+            """, (
+                data['chain_type'],
+                data['chain_purity'],
+                data['chain_thickness'],
+                data['chain_length'],
+                data['chain_color'],
+                data['chain_weight'],
+                data['set_price'],
+                productID
+            ))
+
+            connection.commit()
+
+            # Return the updated product
+            cursor.execute("""
+                SELECT * FROM product WHERE productID = %s
+            """, (productID,))
+            
+            updated_product = cursor.fetchone()
+            return jsonify(updated_product), 200
+
+        except Exception as e:
+            connection.rollback()
+            print(f"Database error: {e}")
+            return jsonify({'error': 'Failed to update product'}), 500
+        finally:
+            cursor.close()
+            connection.close()
+
+    except Exception as e:
+        print(f"Error updating product: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@product_bp.route('/api/products/<int:productID>', methods=['DELETE'])
+def delete_product(productID):
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+        try:
+            # Delete product
+            cursor.execute("DELETE FROM product WHERE productID = %s", (productID,))
+            connection.commit()
+            
+            return jsonify({'message': 'Product deleted successfully'}), 200
+
+        except Exception as e:
+            connection.rollback()
+            print(f"Database error: {e}")
+            return jsonify({'error': 'Failed to delete product'}), 500
+        finally:
+            cursor.close()
+            connection.close()
+
+    except Exception as e:
+        print(f"Error deleting product: {e}")
+        return jsonify({'error': str(e)}), 500
