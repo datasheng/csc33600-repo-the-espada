@@ -1,0 +1,848 @@
+/* Map.module.css */
+.container {
+  margin-top: 60px; /* Add margin to account for header height */
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 60px); /* Subtract header height from viewport height */
+}
+
+.mapContainer {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hamburgerButton {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 999;
+  padding: 8px 12px;
+  background-color: black;
+  color: #FFD700;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 21px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.hamburgerIcon {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+}
+
+.hamburgerButton:hover {
+  background-color: #FFD700;
+  color: black;
+}
+
+.hamburgerButton:hover div div {
+  background-color: black;
+}
+
+.filterMenu {
+  position: absolute;
+  top: 70px; /* Position below the filters button */
+  left: 12px; /* Align with the filters button */
+  width: 250px; /* Reduced width */
+  background: rgba(0, 0, 0, 0.9);
+  padding: 16px; /* Reduced padding */
+  border-radius: 8px;
+  z-index: 999;
+  overflow: visible;
+}
+
+.mapFilterWrapper {
+  margin-bottom: -10px; /* Reduced from 1rem to 12px */
+}
+
+.filterMenu h2 {
+  margin-bottom: 16px;
+  color: #FFD700; /* Changed from white to gold */
+  font-weight: bold;
+}
+
+.filterMenu label {
+  display: block;
+  margin-bottom: 4px; /* Reduced margin */
+  font-weight: 500;
+  color: white;
+  font-size: 14px;
+}
+
+.filterMenu input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.filterMenu select {
+  width: 100%;
+  padding: 6px; /* Reduced padding */
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-top: 4px;
+  margin-bottom: 2px; /* Reduced margin */
+  background-color: #ffffff;
+  color: #000000;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-size: 14px; /* Slightly smaller font */
+  cursor: pointer;
+}
+
+.filterMenu select option {
+  background-color: black;
+  color: white;
+}
+
+.filterMenu select option[value=""] {
+  background-color: #FFD700;
+  color: black;
+  font-weight: bold;
+}
+
+.clearFiltersButton {
+  padding: 8px;
+  background-color: #FFD700;
+  color: black;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: -20px;
+}
+
+.clearFiltersButton:hover {
+  background-color: #e72114;
+  color: white;
+}
+
+.resultsList {
+  position: absolute;
+  top: 12px; /* Match the filterMenu's top position */
+  left: 270px; /* 250px (filterMenu width) + 12px (filterMenu left) + 12px (gap) */
+  width: 369px; /* Increased from 300px to 380px */
+  max-height: calc(100vh - 88px); /* Match filterMenu's max-height */
+  background: rgba(0, 0, 0, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  overflow-y: auto;
+  z-index: 998;
+}
+
+.resultsList h3 {
+  color: white;
+  font-size: 18px;
+}
+
+.storeCard {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.storeCard:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.storeCard.selected {
+  background-color: rgba(255, 215, 0, 0.2);
+  border: 1px solid #FFD700;
+}
+
+.storeCard h3 {
+  color: #FFD700;
+  font-size: 1.35rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.storeCard h4 {
+  color: white;
+  font-size: 1.20rem;
+  font-style: italic;
+  margin: 0 0 8px 0;
+  font-weight: bold;
+}
+
+.storeCard p {
+  color: white;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.hours {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 12px !important;
+}
+
+.price {
+  color: #FFD700 !important;
+  font-weight: bold;
+}
+
+.chainDetails {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chainDetails span {
+  background-color: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.applyFiltersButton {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 8px 0;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  margin-bottom: 0;
+}
+
+.applyFiltersButton:hover {
+  background: #FFD700;
+  color: black;
+}
+
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.resultsHeader h3 {
+  color: white;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #FFD700;
+  font-size: 50px; /* Increased from 24px */
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  color: white;
+}
+
+.selectedMarker {
+  filter: brightness(1.0) saturate(5) sepia(0.5);
+  transition: all 0.3s ease;
+}
+
+.resultsControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.priceSortSelect {
+  /* Base styles */
+  appearance: none;
+  background-color: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* Custom arrow styling */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23FFD700' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+}
+
+.priceSortSelect:hover {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+.priceSortSelect option {
+  background-color: black;
+  color: #FFD700;
+  padding: 0.5rem;
+}
+
+.extendedInfo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 350px;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 998;
+  max-height: calc(100vh - 175px);
+  overflow-y: scroll;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.extendedInfo h2 {
+  color: #FFD700;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  padding-right: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.extendedInfo h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 0px;
+  font-weight: bold;
+}
+
+.extendedInfo .address {
+  color: white;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.extendedInfo .hours {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.extendedInfo .details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.extendedInfo .detail {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.extendedInfo .detail label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.extendedInfo .detail span {
+  color: #FFD700;
+  font-size: 16px;
+}
+
+.closeExtendedInfo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #FFD700;
+  font-size: 50px; /* Increased from 24px */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 60px; /* Added fixed width */
+  height: 60px; /* Added fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Add these properties */
+  padding: 0;
+  transform: translateX(8px); /* Shift the button slightly right */
+  z-index: 999; /* Ensure it's above other content */
+  text-align: center;
+}
+
+.closeExtendedInfo:hover {
+  color: white;
+}
+
+.closeExtendedInfo span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  line-height: 60px; /* Match the height */
+}
+
+.starRating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  position: relative;
+  display: inline-block;
+  font-size: 18px;
+}
+
+.starBackground {
+  color: rgba(255, 215, 0, 0.2);
+}
+
+.starFill {
+  color: #FFD700;
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.reviewCount {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+/* Extended info specific styles */
+.extendedInfo .starRating {
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.extendedInfo .star {
+  font-size: 24px;
+}
+
+.extendedInfo .reviewCount {
+  font-size: 18px;
+  color: #FFD700;
+}
+
+.extendedInfo .ratingNumber {
+  font-size: 20px;
+  color: #FFD700;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+/* For extended info view */
+.extendedInfo .ratingNumber {
+  font-size: 20px;
+}
+
+/* Base store status styles (for results list) */
+.storeStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+/* Extended info store status styles */
+.extendedInfoStatus {
+  margin: 16px 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.statusHeader {
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statusInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduced from 8px to 6px */
+}
+
+.statusInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Reduced from 8px to 6px */
+}
+
+.hoursDropdown {
+  display: block; /* Changed from 'none' to always show when rendered */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hourRow {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.dropdownArrow {
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+  display: inline-block;
+  color: white;
+}
+
+.dropdownArrow.open {
+  transform: rotate(180deg);
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.detail {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.detail label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.detail span {
+  color: #FFD700;
+  font-size: 16px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.statusDot.open {
+  background-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.statusDot.closed {
+  background-color: #f44336;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.5);
+}
+
+.statusText {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nextChange {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+.statusBullet {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 -1px; /* Reduced from 8px to 4px */
+}
+
+/* Scrollbar styles */
+.filterMenu::-webkit-scrollbar,
+.resultsList::-webkit-scrollbar,
+.extendedInfo::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filterMenu::-webkit-scrollbar-track,
+.resultsList::-webkit-scrollbar-track,
+.extendedInfo::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.filterMenu::-webkit-scrollbar-thumb,
+.resultsList::-webkit-scrollbar-thumb,
+.extendedInfo::-webkit-scrollbar-thumb {
+  background: #FFD700;
+  border-radius: 4px;
+}
+
+.filterMenu::-webkit-scrollbar-thumb:hover,
+.resultsList::-webkit-scrollbar-thumb:hover,
+.extendedInfo::-webkit-scrollbar-thumb:hover {
+  background: #e6b800;
+}
+
+/* Add to Map.module.css */
+.actionButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.directionsButton,
+.detailsButton {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+}
+
+.directionsButton {
+  background-color: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  border: 1px solid #FFD700;
+}
+
+.detailsButton {
+  background-color: #FFD700;
+  color: black;
+}
+
+.directionsButton:hover {
+  background-color: rgba(255, 215, 0, 0.2);
+}
+
+.detailsButton:hover {
+  background-color: #e6b800;
+}
+
+.productsSection {
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}
+
+.productsSection h4 {
+  color: #FFD700;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.productRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.productInfo {
+  flex: 1;
+}
+
+.productName {
+  color: #FFD700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.productPrice {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 1.2rem !important;
+  margin-bottom: 12px;
+}
+
+.viewProductButton {
+  background: transparent;
+  border: 1px solid #FFD700;
+  color: #FFD700;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-top: -24px; /* Reduced from 8px to 4px */
+  transition: all 0.2s ease;
+}
+
+.viewProductButton:hover {
+  background: #FFD700;
+  color: black;
+}
+
+.productCard {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.productCard:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.productCard.selected {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid #FFD700;
+}
+
+.storeName {
+  color: white;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  font-style: italic;
+}
+
+.mapFilterWrapper :global(.relative) button {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  padding: 8px 12px !important;
+}
+
+.mapFilterWrapper :global(.relative) ul {
+  font-size: 14px !important;
+}
+
+.mapFilterWrapper :global(.relative) ul li {
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+}
+
+.mapFilterWrapper :global(.relative) [data-selected="true"] {
+  font-size: 14px !important;
+}
+
+.mapFilterWrapper :global(.relative) button span {
+  font-size: 14px !important;
+}
+
+/* Target the dropdown container */
+.mapFilterWrapper :global([role="listbox"]) {
+  font-size: 14px !important;
+}
+
+/* Target individual listbox options */
+.mapFilterWrapper :global([role="option"]) {
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+}
+
+/* Target selected option */
+.mapFilterWrapper :global([role="option"][data-highlighted]) {
+  font-size: 14px !important;
+  background-color: rgba(255, 215, 0, 0.1) !important;
+}
+
+/* Add this new style for the dropdown options */
+.mapFilterWrapper :global(.relative) ul li {
+  font-size: 14px !important;
+}
+
+.productCard .productName {
+  color: #FFD700;
+  font-size: 1.3rem !important;
+  font-weight: bold;
+  margin-bottom: 2px !important;
+}
+
+.productCard .storeName {
+  font-size: 1.2rem !important;
+  font-style: italic;
+  color: white;
+  margin: 2px 0 !important;
+}
+
+.productCard .productPrice {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 1.2rem !important;
+  margin-top: 4px !important;
+}
+
+/* Add or update the cardStoreStatus class */
+.cardStoreStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Increased from default/6px to 8px */
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+/* Make sure the statusDot and statusText styles are present */
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.statusText {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusBullet {
+  color: #9ca3af;
+}
+
+.nextChange {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
