@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Clock, Save, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import axios from "axios";
 
 type StoreHour = { storeHourID: number; day: string; openTime: string; closeTime: string; };
 interface Props { storeID: number; }
@@ -96,7 +97,14 @@ export default function StoreHoursEditor({ storeID }: Props) {
     setError(null);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 700));
+      const payload = hoursData
+      .filter(h => h.isModified && h.isOpen !== false)
+      .map(h => ({
+        day: h.day,
+        openTime: h.openTime,
+        closeTime: h.closeTime
+      }));
+      await axios.put(`/api/store-hours/${storeID}`, payload);
       setHoursData(prev => prev.map(h => ({ ...h, isModified: false })));
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);

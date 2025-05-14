@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { Product, fetchProducts, getFormattedProductName } from "@/app/data/stores";
 import { CHAIN_TYPES, CHAIN_COLORS, GOLD_PURITIES } from "@/app/data/stores";
 import { Plus, Save, Trash2, Loader2 } from "lucide-react";
+import axios from "axios";
+
 
 interface Props { storeID: number; }
 
@@ -34,10 +36,8 @@ export default function ProductPriceEditor({ storeID }: Props) {
       const product = products.find(p => p.productID === productID);
       if (!product) return;
       
-      await fetch(`/api/products/${productID}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ set_price: product.set_price }),
+      await axios.put(`/api/products/${productID}`, {
+        set_price: product.set_price
       });
       alert('Price updated');
     } catch (err) {
@@ -51,7 +51,7 @@ export default function ProductPriceEditor({ storeID }: Props) {
   const handleDelete = async (productID: number) => {
     setDeleting(productID);
     try {
-      await fetch(`/api/products/${productID}`, { method: 'DELETE' });
+      await axios.delete(`/api/products/${productID}`);
       setProducts(prev => prev.filter(p => p.productID !== productID));
     } catch (err) {
       console.error(err);
@@ -63,12 +63,8 @@ export default function ProductPriceEditor({ storeID }: Props) {
 
   const handleAdd = async () => {
     try {
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storeID, ...newProduct })
-      });
-      const created: Product = await res.json();
+      const res = await axios.post('/api/products', { storeID, ...newProduct });
+      const created: Product = res.data;
       setProducts(prev => [...prev, created]);
       setNewProduct({ chain_type: "", chain_purity: "", chain_thickness: 0, chain_length: 0, chain_color: "", chain_weight: 0, set_price: 0 });
     } catch (err) {
