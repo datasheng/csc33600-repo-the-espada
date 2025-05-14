@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation';
 
 interface BusinessInfo {
     storeName: string;
-    description: string;
     phone: string;
     email: string;
-    website: string;
     address: string;
     city: string;
     state: string;
     zipCode: string;
+    latitude: string;
+    longitude: string;
     hours: {
         [key: string]: {
             open: string;
@@ -21,13 +21,6 @@ interface BusinessInfo {
             closed: boolean;
         };
     };
-    categories: string[];
-    socialMedia: {
-        facebook?: string;
-        instagram?: string;
-        twitter?: string;
-    };
-    specialties: string[];
 }
 
 const DAYS_OF_WEEK = [
@@ -40,45 +33,73 @@ const DAYS_OF_WEEK = [
     'Sunday'
 ];
 
-const JEWELRY_SPECIALTIES = [
-    'Fine Jewelry',
-    'Custom Design',
-    'Diamond Jewelry',
-    'Wedding Rings',
-    'Vintage Jewelry',
-    'Luxury Watches',
-    'Repair Services',
-    'Appraisal Services'
-];
+const to24Hour = (time: string): string | null => {
+    if (!time) return null;
+    const [hours, minutes] = time.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return null;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+};
+
+const formatHoursForDB = (businessHours: BusinessInfo['hours']): Array<{
+    daysOpen: string;
+    openTime: string | null;
+    closeTime: string | null;
+}> => {
+    return Object.entries(businessHours).map(([day, hours]) => ({
+        daysOpen: day,
+        openTime: hours.closed ? null : to24Hour(hours.open),
+        closeTime: hours.closed ? null : to24Hour(hours.close)
+    }));
+};
+
+const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digits
+    const cleaned = value.replace(/\D/g, '');
+    
+    // Limit to 10 digits
+    const limited = cleaned.slice(0, 10);
+    
+    // Format as (XXX) XXX-XXXX
+    if (limited.length >= 6) {
+        return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
+    } else if (limited.length >= 3) {
+        return `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
+    } else if (limited.length > 0) {
+        return `(${limited}`;
+    }
+    return '';
+};
 
 export default function BusinessSetup() {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
     const [businessInfo, setBusinessInfo] = useState<BusinessInfo>({
         storeName: '',
-        description: '',
         phone: '',
         email: '',
-        website: '',
         address: '',
         city: '',
         state: '',
         zipCode: '',
+        latitude: '',
+        longitude: '',
         hours: DAYS_OF_WEEK.reduce((acc, day) => ({
             ...acc,
             [day]: { open: '09:00', close: '17:00', closed: false }
-        }), {}),
-        categories: [],
-        socialMedia: {},
-        specialties: []
+        }), {})
     });
 
     useEffect(() => {
-        // Check if user has completed payment
-        const billingInfo = localStorage.getItem('billingInfo');
-        if (!billingInfo) {
-            router.push('/subscription');
+        const userRole = localStorage.getItem('userRole');
+        const ownerID = localStorage.getItem('ownerID');
+
+        // If not a business user with ownerID, redirect to home
+        if (userRole !== 'business' || !ownerID) {
+            router.replace('/');
+            return;
         }
+
+        // Don't check for completedSubscription here since we already have ownerID
     }, [router]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -89,12 +110,11 @@ export default function BusinessSetup() {
         }));
     };
 
-    const handleSpecialtyChange = (specialty: string) => {
+    const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const formatted = formatPhoneNumber(e.target.value);
         setBusinessInfo(prev => ({
             ...prev,
-            specialties: prev.specialties.includes(specialty)
-                ? prev.specialties.filter(s => s !== specialty)
-                : [...prev.specialties, specialty]
+            phone: formatted
         }));
     };
 
@@ -111,59 +131,78 @@ export default function BusinessSetup() {
         }));
     };
 
-    const handleSocialMediaChange = (platform: string, value: string) => {
-        setBusinessInfo(prev => ({
-            ...prev,
-            socialMedia: {
-                ...prev.socialMedia,
-                [platform]: value
-            }
-        }));
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('Form submitted, current step:', currentStep);
 
-        // Validate required fields based on current step
         if (currentStep === 1) {
-            if (!businessInfo.storeName || !businessInfo.description || businessInfo.specialties.length === 0) {
-                alert('Please complete all required fields in Step 1');
+            if (!businessInfo.storeName || !businessInfo.phone || !businessInfo.email || 
+                !businessInfo.address || !businessInfo.city || !businessInfo.state || 
+                !businessInfo.zipCode || !businessInfo.latitude || !businessInfo.longitude) {
+                alert('Please complete all required fields');
                 return;
             }
-        } else if (currentStep === 2) {
-            if (!businessInfo.phone || !businessInfo.email || !businessInfo.address || 
-                !businessInfo.city || !businessInfo.state || !businessInfo.zipCode) {
-                alert('Please complete all required fields in Step 2');
-                return;
-            }
-        } else if (currentStep === 3) {
-            // Validate that at least one day has hours set
+            setCurrentStep(prev => prev + 1);
+        } 
+        else if (currentStep === 2) {
+            console.log('Submitting final form');
             const hasHours = Object.values(businessInfo.hours).some(day => !day.closed);
             if (!hasHours) {
                 alert('Please set business hours for at least one day');
                 return;
             }
-        }
 
-        // If not on the last step, move to next step
-        if (currentStep < 4) {
-            setCurrentStep(prev => prev + 1);
-            return;
-        }
+            try {
+                const ownerID = localStorage.getItem('ownerID');
+                if (!ownerID) {
+                    throw new Error('Owner ID not found');
+                }
 
-        // On the last step, validate and submit
-        if (currentStep === 4) {
-            // Save business info to localStorage
-            localStorage.setItem('businessInfo', JSON.stringify(businessInfo));
-            
-            // Clear the billing info since it's no longer needed
-            localStorage.removeItem('billingInfo');
-            
-            // Add a small delay to ensure localStorage is updated
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Redirect to dashboard
-            router.push('/dashboard');
+                const formattedHours = formatHoursForDB(businessInfo.hours);
+                console.log('Formatted hours:', formattedHours);
+
+                const response = await fetch('http://localhost:5000/api/stores', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        ownerID: parseInt(ownerID),
+                        store_name: businessInfo.storeName,
+                        address: `${businessInfo.address}, ${businessInfo.city}, ${businessInfo.state} ${businessInfo.zipCode}`,
+                        latitude: parseFloat(businessInfo.latitude),
+                        longitude: parseFloat(businessInfo.longitude),
+                        phone: businessInfo.phone,
+                        email: businessInfo.email,
+                        hours: formattedHours
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Server response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create store');
+                }
+
+                // Save business info to localStorage
+                localStorage.setItem('businessInfo', JSON.stringify({
+                    ...businessInfo,
+                    storeID: data.storeID
+                }));
+                
+                // Clean up and set completion flags
+                localStorage.removeItem('billingInfo');
+                localStorage.setItem('completedSetup', 'true');
+
+                // Redirect to dashboard using replace
+                router.replace('/dashboard');
+
+            } catch (error) {
+                console.error('Error saving business info:', error);
+                alert('An error occurred while saving your business information.');
+            }
         }
     };
 
@@ -182,46 +221,6 @@ export default function BusinessSetup() {
                     required
                 />
             </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Store Description
-                </label>
-                <textarea
-                    name="description"
-                    value={businessInfo.description}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    rows={4}
-                    placeholder="Tell customers about your jewelry store, your expertise, and what makes you unique..."
-                    required
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Store Specialties
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                    {JEWELRY_SPECIALTIES.map(specialty => (
-                        <div key={specialty} className="flex items-center">
-                            <input
-                                type="checkbox"
-                                id={specialty}
-                                checked={businessInfo.specialties.includes(specialty)}
-                                onChange={() => handleSpecialtyChange(specialty)}
-                                className="h-4 w-4 text-yellow-400 rounded border-gray-300"
-                            />
-                            <label htmlFor={specialty} className="ml-2 text-sm text-gray-700">
-                                {specialty}
-                            </label>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-
-    const renderStep2 = () => (
-        <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -231,14 +230,15 @@ export default function BusinessSetup() {
                         type="tel"
                         name="phone"
                         value={businessInfo.phone}
-                        onChange={handleInputChange}
+                        onChange={handlePhoneInput}  // Use the specific handler
                         className="w-full p-2 border border-gray-300 rounded-md"
+                        placeholder="(XXX) XXX-XXXX"
                         required
                     />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email
+                        Business Email
                     </label>
                     <input
                         type="email"
@@ -249,18 +249,6 @@ export default function BusinessSetup() {
                         required
                     />
                 </div>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Website
-                </label>
-                <input
-                    type="url"
-                    name="website"
-                    value={businessInfo.website}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -309,11 +297,41 @@ export default function BusinessSetup() {
                         />
                     </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Latitude
+                        </label>
+                        <input
+                            type="text"
+                            name="latitude"
+                            value={businessInfo.latitude}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="e.g. 40.7128"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Longitude
+                        </label>
+                        <input
+                            type="text"
+                            name="longitude"
+                            value={businessInfo.longitude}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="e.g. -74.0060"
+                            required
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );
 
-    const renderStep3 = () => (
+    const renderStep2 = () => (
         <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Business Hours</h3>
             {DAYS_OF_WEEK.map(day => (
@@ -354,45 +372,6 @@ export default function BusinessSetup() {
         </div>
     );
 
-    const renderStep4 = () => (
-        <div className="space-y-6">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Social Media Links
-                </label>
-                <div className="space-y-4">
-                    <div>
-                        <input
-                            type="url"
-                            placeholder="Facebook URL"
-                            value={businessInfo.socialMedia.facebook || ''}
-                            onChange={(e) => handleSocialMediaChange('facebook', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                    </div>
-                    <div>
-                        <input
-                            type="url"
-                            placeholder="Instagram URL"
-                            value={businessInfo.socialMedia.instagram || ''}
-                            onChange={(e) => handleSocialMediaChange('instagram', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                    </div>
-                    <div>
-                        <input
-                            type="url"
-                            placeholder="Twitter URL"
-                            value={businessInfo.socialMedia.twitter || ''}
-                            onChange={(e) => handleSocialMediaChange('twitter', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
     return (
         <>
             <Header />
@@ -404,15 +383,13 @@ export default function BusinessSetup() {
                                 Set Up Your Business Profile
                             </h1>
                             <p className="text-gray-600">
-                                Step {currentStep} of 4
+                                Step {currentStep} of 2
                             </p>
                         </div>
 
                         <form onSubmit={handleSubmit}>
                             {currentStep === 1 && renderStep1()}
                             {currentStep === 2 && renderStep2()}
-                            {currentStep === 3 && renderStep3()}
-                            {currentStep === 4 && renderStep4()}
 
                             <div className="flex justify-between mt-8">
                                 {currentStep > 1 && (
@@ -424,20 +401,20 @@ export default function BusinessSetup() {
                                         ← Previous
                                     </button>
                                 )}
-                                {currentStep < 4 ? (
+                                {currentStep === 2 ? (
                                     <button
-                                        type="button"
-                                        onClick={() => setCurrentStep(prev => prev + 1)}
-                                        className="bg-yellow-400 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-300"
-                                    >
-                                        Next →
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="submit"
+                                        type="submit" // This is important
                                         className="bg-yellow-400 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-300"
                                     >
                                         Complete Setup
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmit}
+                                        className="bg-yellow-400 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-300"
+                                    >
+                                        Next →
                                     </button>
                                 )}
                             </div>
@@ -448,4 +425,4 @@ export default function BusinessSetup() {
             <Footer />
         </>
     );
-} 
+}

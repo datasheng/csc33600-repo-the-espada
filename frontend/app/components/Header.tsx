@@ -22,6 +22,7 @@ const Header: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   
   // Update the chainTypes array with proper typing
   const chainTypes: ChainType[] = [
@@ -79,7 +80,9 @@ const Header: React.FC = () => {
   useEffect(() => {
     const checkAuthStatus = () => {
       const loggedInStatus = localStorage.getItem("isLoggedIn") === "true";
+      const role = localStorage.getItem("userRole");
       setIsLoggedIn(loggedInStatus);
+      setUserRole(role);
     };
 
     // Check auth status initially
@@ -218,8 +221,11 @@ const Header: React.FC = () => {
         <Link href="/contact-us" className={styles.navLink}>CONTACT</Link>
         {isLoggedIn ? (
           <>
-            <Link href="/dashboard" className={styles.navLink}>DASHBOARD</Link>
-            <Link href="/profile" className={styles.authButton}>PROFILE</Link>
+            {userRole === 'business' ? (
+              <Link href="/dashboard" className={styles.navLink}>DASHBOARD</Link>
+            ) : (
+              <Link href="/profile" className={styles.authButton}>PROFILE</Link>
+            )}
             <button
               onClick={handleSignOut}
               className={styles.authButton}
@@ -229,7 +235,7 @@ const Header: React.FC = () => {
           </>
         ) : (
           <>
-            <Link href="/login" className={styles.authButton}>LOGIN</Link>
+            <Link href="/login" className={styles.authButton}>LOG IN</Link>
             <Link href="/signup" className={styles.authButton}>SIGN UP</Link>
           </>
         )}

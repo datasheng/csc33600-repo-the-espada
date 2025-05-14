@@ -4,80 +4,69 @@ from db import get_db_connection
 
 signup_bp = Blueprint('signup_bp', __name__)
 
-@signup_bp.route('/signup', methods=['POST'])
+@signup_bp.route('/api/signup', methods=['POST'])
 def signup():
     connection = None
     cursor = None
 
     try:
         data = request.get_json()
-        username = data.get('username')
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
         email = data.get('email')
         password = data.get('password')
-        account_type = data.get('account_type')  # 'customer' or 'business'
+        is_business = data.get('is_business', False)
 
-        if not all([username, email, password, account_type]):
+        if not all([first_name, last_name, email, password]):
             return jsonify({'error': 'Missing required fields'}), 400
 
         connection = get_db_connection()
-        cursor = connection.cursor(pymysql.cursors.DictCursor)  # Use DictCursor like in auth_routes
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
 
         # Check for duplicate email
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         if cursor.fetchone():
             return jsonify({'error': 'Email already exists'}), 409
-        
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-        if cursor.fetchone():
-            return jsonify({'error': 'Username already exists'}), 409
 
-        # Insert user
-        cursor.execute("""
-            INSERT INTO users (username, email, user_password)
-            VALUES (%s, %s, %s)
-        """, (username, email, password))
-        user_id = cursor.lastrowid
+        # Start transaction
+        connection.begin()
 
-        if account_type == 'business':
-            store_name = data.get('store_name')
-            store_address = data.get('store_address')
-
-            if not store_name or not store_address:
-                connection.rollback()
-                return jsonify({'error': 'Missing store name or address'}), 400
-
-            # Step 1: Insert into store_owners
-            cursor.execute("INSERT INTO store_owners (userID) VALUES (%s)", (user_id,))
-            owner_id = cursor.lastrowid
-
-            # Step 2: Insert into store with dummy lat/lng for now
+        try:
+            # Insert into users table first
             cursor.execute("""
-                INSERT INTO store (ownerID, store_name, address, rating, latitude, longitude)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (owner_id, store_name, store_address, 0.0, 0.0, 0.0))
+                INSERT INTO users (first_name, last_name, email, user_password)
+                VALUES (%s, %s, %s, %s)
+            """, (first_name, last_name, email, password))
+            
+            user_id = cursor.lastrowid
+            
+            # Commit transaction
+            connection.commit()
 
-        connection.commit()
-        
-         # Set session data like in auth_routes
-        session['logged_in'] = True
-        session['user_id'] = user_id
-        session['email'] = email
+            # Set session data
+            session['logged_in'] = True
+            session['user_id'] = user_id
+            session['email'] = email
 
-        return jsonify({
-            "message": f"{account_type.capitalize()} user registered successfully",
-            "user": {
-                "userID": user_id,
-                "username": username,
-                "email": email,
-                "account_type": account_type
+            response_data = {
+                "message": "User registered successfully",
+                "user": {
+                    "userID": user_id,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": email
+                }
             }
-        }), 201
+
+            return jsonify(response_data), 201
+
+        except Exception as e:
+            connection.rollback()
+            raise e
 
     except Exception as e:
         print("Signup error:", e)
-        if connection:
-            connection.rollback()
-        return jsonify({'error': 'Server error during signup'}), 500
+        return jsonify({'error': str(e)}), 500
 
     finally:
         if cursor: cursor.close()

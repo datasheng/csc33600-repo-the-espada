@@ -10,19 +10,6 @@ import { useRouter } from 'next/navigation';
 interface DashboardStats {
     totalProducts: number;
     activeListings: number;
-    totalOrders: number;
-    pendingOrders: number;
-    revenue: number;
-    views: number;
-}
-
-interface RecentOrder {
-    id: string;
-    customer: string;
-    product: string;
-    amount: number;
-    status: 'pending' | 'completed' | 'cancelled';
-    date: string;
 }
 
 interface Product {
@@ -36,88 +23,50 @@ interface Product {
 
 export default function Dashboard() {
     const router = useRouter();
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [stats, setStats] = useState<DashboardStats>({
         totalProducts: 0,
-        activeListings: 0,
-        totalOrders: 0,
-        pendingOrders: 0,
-        revenue: 0,
-        views: 0
+        activeListings: 0
     });
-    const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [stores, setStores] = useState<Store[]>([]);
     const [selectedStore, setSelectedStore] = useState<number | null>(null);
 
     useEffect(() => {
-        // Check if user is logged in and has completed setup
+        const role = localStorage.getItem('userRole');
+        setUserRole(role);
+
+        // If user is not a business, stop here
+        if (role && role !== 'business') {
+            return;
+        }
+
+        // Check if in signup flow
+        const signupData = localStorage.getItem('signupData');
+        if (signupData) {
+            router.push('/subscription');
+            return;
+        }
+
+        // Check if business info exists
         const businessInfo = localStorage.getItem('businessInfo');
         if (!businessInfo) {
             router.push('/business-setup');
             return;
         }
 
-        // Parse the business info
-        try {
-            const parsedInfo = JSON.parse(businessInfo);
-            if (!parsedInfo || !parsedInfo.storeName) {
-                router.push('/business-setup');
-                return;
-            }
-        } catch (error) {
+        // Changed from completedSubscription to completedSetup
+        const completedSetup = localStorage.getItem('completedSetup');
+        if (!completedSetup) {
             router.push('/business-setup');
             return;
         }
 
-        // Here you would typically fetch dashboard data from your backend
-        // For now, we'll use mock data
-        setStats({
-            totalProducts: 45,
-            activeListings: 38,
-            totalOrders: 156,
-            pendingOrders: 12,
-            revenue: 45678.90,
-            views: 1234
-        });
+        // When business setup completes successfully
+        localStorage.setItem('completedSetup', 'true');
 
-        setRecentOrders([
-            {
-                id: '1',
-                customer: 'John Doe',
-                product: 'Diamond Engagement Ring',
-                amount: 4999.99,
-                status: 'pending',
-                date: '2024-03-15'
-            },
-            {
-                id: '2',
-                customer: 'Jane Smith',
-                product: 'Gold Necklace',
-                amount: 1299.99,
-                status: 'completed',
-                date: '2024-03-14'
-            }
-        ]);
-
-        setProducts([
-            {
-                id: '1',
-                name: 'Diamond Engagement Ring',
-                price: 4999.99,
-                category: 'Wedding Rings',
-                status: 'active',
-                image: '/placeholder.jpg'
-            },
-            {
-                id: '2',
-                name: 'Gold Necklace',
-                price: 1299.99,
-                category: 'Fine Jewelry',
-                status: 'active',
-                image: '/placeholder.jpg'
-            }
-        ]);
+        // Rest of your dashboard initialization code...
     }, [router]);
 
     useEffect(() => {
@@ -126,67 +75,52 @@ export default function Dashboard() {
             .catch((err) => console.error(err));
     }, []);
 
+    // Render error page for non-business users
+    if (userRole && userRole !== 'business') {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-grow flex items-center justify-center px-4">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <div className="bg-black rounded-lg p-8 shadow-xl">
+                            <h1 className="text-2xl text-[#FFD700] font-bold mb-4">
+                                Business Account Required
+                            </h1>
+                            <p className="text-white mb-6">
+                                You need a business account to access the dashboard. If you're a business owner, 
+                                please sign up for a business account.
+                            </p>
+                            <div className="flex justify-center gap-4">
+                                <button
+                                    onClick={() => router.push('/')}
+                                    className="px-6 py-3 bg-transparent border border-[#FFD700] text-[#FFD700] rounded-lg font-bold hover:bg-[#FFD700] hover:text-black transition-colors"
+                                >
+                                    Return Home
+                                </button>
+                                <button
+                                    onClick={() => router.push('/signup')}
+                                    className="px-6 py-3 bg-[#FFD700] text-black rounded-lg font-bold hover:bg-[#e6c200] transition-colors"
+                                >
+                                    Create Business Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
     const renderOverview = () => (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6">
                 <div className="bg-white p-6 rounded-lg shadow">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Products</h3>
                     <div className="space-y-2">
                         <p className="text-3xl font-bold text-gray-900">{stats.totalProducts}</p>
                         <p className="text-sm text-gray-500">{stats.activeListings} active listings</p>
                     </div>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Orders</h3>
-                    <div className="space-y-2">
-                        <p className="text-3xl font-bold text-gray-900">{stats.totalOrders}</p>
-                        <p className="text-sm text-gray-500">{stats.pendingOrders} pending orders</p>
-                    </div>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Revenue</h3>
-                    <div className="space-y-2">
-                        <p className="text-3xl font-bold text-gray-900">${stats.revenue.toLocaleString()}</p>
-                        <p className="text-sm text-gray-500">{stats.views} profile views</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h3>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {recentOrders.map(order => (
-                                <tr key={order.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.product}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.amount.toLocaleString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                            order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}>
-                                            {order.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.date}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
