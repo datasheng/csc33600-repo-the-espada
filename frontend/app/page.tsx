@@ -236,9 +236,9 @@ export default function Home() {
                 <div className="relative mb-6">
                   <span className="text-[#FFD700] text-xl font-bold mb-2 block">Step 3</span>
                   <h3 className="text-3xl font-bold mb-4">Compare Listings</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
-                    Browse through the results to find the best deal. Each listing shows store name, location, rating, open status, and real user-reported prices. Get a clear overview of all available options and make informed decisions.
-                  </p>
+                    <p className="text-gray-600 text-lg leading-relaxed">
+                    Dive into the product pages to see detailed chain specifications, retail prices, and the latest user-reported purchases. Each page provides all the information you need to make an informed decision, and you can even report your own prices to help others in the community.
+                    </p>
                 </div>
               </div>
               <div className="flex-1 order-1 md:order-2">
@@ -271,34 +271,10 @@ export default function Home() {
                 <div className="relative mb-6">
                   <span className="text-[#FFD700] text-xl font-bold mb-2 block">Step 4</span>
                   <h3 className="text-3xl font-bold mb-4">View Store Details</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
-                    Click More Store Info to visit the store's page. See everything from store hours to chain specs. When you're ready, we'll direct you to the retailer's website or physical location with turn-by-turn directions.
-                  </p>
+                    <p className="text-gray-600 text-lg leading-relaxed">
+                    Visit the store's page to explore detailed information, including store hours, contact details, and available gold chain products. You'll also find a user ratings section, where you can input your own rating, and a direct link to navigate to the store via Google Maps.
+                    </p>
                 </div>
-              </div>
-            </div>
-
-            {/* Step 5 */}
-            <div className="flex flex-col md:flex-row items-center gap-12">
-              <div className="flex-1 order-2 md:order-1">
-                <div className="relative mb-6">
-                  <span className="text-[#FFD700] text-xl font-bold mb-2 block">Step 5</span>
-                  <h3 className="text-3xl font-bold mb-4">Share & Earn</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
-                    After your purchase, report the price you paid and leave a store rating. Help others shop smarter—and earn community rewards for contributing to our growing database of real-time gold chain prices.
-                  </p>
-                </div>
-              </div>
-              <div className="flex-1 order-1 md:order-2">
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="rounded-lg shadow-2xl w-full h-auto journeyImage"
-                >
-                  <source src="/journey/review.mp4" type="video/mp4" />
-                </video>
               </div>
             </div>
           </div>

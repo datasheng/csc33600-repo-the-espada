@@ -45,7 +45,7 @@ const SearchPage: React.FC = () => {
   const [priceSort, setPriceSort] = useState<"" | "lowToHigh" | "highToLow">("");
 
   // Add priceHistory state
-  const [priceHistory, setPriceHistory] = useState<PriceHistory[]>([]);
+  const [priceHistory, setPriceHistory] = useState<Record<number, PriceHistory[]>>({});
 
   // Load stores and products
   useEffect(() => {
@@ -57,11 +57,11 @@ const SearchPage: React.FC = () => {
       setStores(storeData);
       setProducts(productData);
       
-      // Add this line
-      if (productData.length > 0) {
-        const priceHistoryData = await fetchPriceHistory(productData[0].productID);
-        setPriceHistory(priceHistoryData);
-      }
+      // Remove this part - don't fetch price history for first product
+      // if (productData.length > 0) {
+      //   const priceHistoryData = await fetchPriceHistory(productData[0].productID);
+      //   setPriceHistory(priceHistoryData);
+      // }
     };
     loadData();
   }, []);
@@ -153,6 +153,28 @@ const SearchPage: React.FC = () => {
   const hours = Math.floor(diffInMinutes / 60);
   return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
 };
+
+// Add useEffect to fetch price histories for filtered products
+useEffect(() => {
+  const fetchPriceHistories = async () => {
+    const histories = await Promise.all(
+      filteredProducts.map(product => 
+        fetchPriceHistory(product.productID)
+      )
+    );
+
+    const newPriceHistory = histories.reduce((acc, history, index) => {
+      acc[filteredProducts[index].productID] = history;
+      return acc;
+    }, {} as Record<number, PriceHistory[]>);
+
+    setPriceHistory(newPriceHistory);
+  };
+
+  if (filteredProducts.length > 0) {
+    fetchPriceHistories();
+  }
+}, [filteredProducts]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -370,6 +392,8 @@ const SearchPage: React.FC = () => {
                   .map((product) => {
                     const store = stores.find(s => s.storeID === product.storeID); // Changed from id/storeId
                     if (!store) return null;
+
+                    // Price history is now available from the state
                     return (
                       <motion.div
                         key={product.productID} // Changed from productId
@@ -403,21 +427,27 @@ const SearchPage: React.FC = () => {
                           <div className="text-right flex flex-col items-end gap-4">
                             <div className="flex items-center gap-8">
                               {/* Latest Price Report */}
-                              {priceHistory && priceHistory[0] ? (
-                                <div className="flex flex-col items-end gap-1">
-                                  <div className="text-white text-base">Latest Purchase By Users</div>
-                                  <div className="text-3xl font-bold text-[#FFD700]">
-                                    ${Number(priceHistory[0].latest_price).toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2
-                                    })}
+                              <div className="flex flex-col items-end gap-1">
+                                <div className="text-white text-base">Latest Purchase By Users</div>
+                                {priceHistory[product.productID] && priceHistory[product.productID][0] ? (
+                                  <>
+                                    <div className="text-3xl font-bold text-[#FFD700]">
+                                      ${Number(priceHistory[product.productID][0].latest_price).toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                      })}
+                                    </div>
+                                    <span className="text-gray-400 text-xl">By {priceHistory[product.productID][0].full_name}</span>
+                                    <span className="text-gray-300 text-lg">
+                                      {getRelativeTimeString(new Date(priceHistory[product.productID][0].purchase_date))}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <div className="text-gray-400 text-lg">
+                                    No latest purchases by users
                                   </div>
-                                  <span className="text-gray-400 text-xl">By {priceHistory[0].full_name}</span>
-                                  <span className="text-gray-300 text-lg">
-                                  {getRelativeTimeString(new Date(priceHistory[0].purchase_date))}
-                                  </span>
-                                </div>
-                              ) : null}
+                                )}
+                              </div>
 
                               {/* Center divider between prices */}
                               <div className="h-36 w-px bg-gray-600"></div>
