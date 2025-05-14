@@ -488,7 +488,6 @@ const MapComponent: React.FC = () => {
   // Remove the duplicate URL parameter handlers and combine into one
   useEffect(() => {
     const storeID = searchParams.get('storeID');
-    
     // Skip if no storeID or if it's already selected
     if (!storeID || selectedStore === parseInt(storeID)) return;
     

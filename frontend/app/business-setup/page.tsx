@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { CHAIN_TYPES, CHAIN_COLORS, GOLD_PURITIES } from '../data/stores';
 
 interface BusinessInfo {
     storeName: string;
@@ -21,6 +22,17 @@ interface BusinessInfo {
             closed: boolean;
         };
     };
+}
+
+// Update the ProductInfo interface
+interface ProductInfo {
+    chain_type: string;
+    chain_purity: string;
+    chain_thickness: string;
+    chain_length: string;
+    chain_color: string;
+    chain_weight: string;
+    set_price: string;
 }
 
 const DAYS_OF_WEEK = [
@@ -89,6 +101,18 @@ export default function BusinessSetup() {
         }), {})
     });
 
+    const [products, setProducts] = useState<ProductInfo[]>([]);
+    // Update the initial state
+    const [currentProduct, setCurrentProduct] = useState<ProductInfo>({
+        chain_type: '',
+        chain_purity: '',
+        chain_thickness: '',
+        chain_length: '',
+        chain_color: '',
+        chain_weight: '',
+        set_price: ''
+    });
+
     useEffect(() => {
         const userRole = localStorage.getItem('userRole');
         const ownerID = localStorage.getItem('ownerID');
@@ -136,6 +160,7 @@ export default function BusinessSetup() {
         console.log('Form submitted, current step:', currentStep);
 
         if (currentStep === 1) {
+            // First step validation remains the same
             if (!businessInfo.storeName || !businessInfo.phone || !businessInfo.email || 
                 !businessInfo.address || !businessInfo.city || !businessInfo.state || 
                 !businessInfo.zipCode || !businessInfo.latitude || !businessInfo.longitude) {
@@ -145,10 +170,18 @@ export default function BusinessSetup() {
             setCurrentStep(prev => prev + 1);
         } 
         else if (currentStep === 2) {
-            console.log('Submitting final form');
+            // Second step validation remains the same
             const hasHours = Object.values(businessInfo.hours).some(day => !day.closed);
             if (!hasHours) {
                 alert('Please set business hours for at least one day');
+                return;
+            }
+            setCurrentStep(prev => prev + 1);
+        }
+        else if (currentStep === 3) {
+            // Only check if at least one product exists
+            if (products.length === 0) {
+                alert('Please add at least one product');
                 return;
             }
 
@@ -158,10 +191,11 @@ export default function BusinessSetup() {
                     throw new Error('Owner ID not found');
                 }
 
+                // Format hours for database
                 const formattedHours = formatHoursForDB(businessInfo.hours);
-                console.log('Formatted hours:', formattedHours);
 
-                const response = await fetch('http://localhost:5000/api/stores', {
+                // Create store in backend
+                const storeResponse = await fetch('http://localhost:5000/api/stores', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -179,29 +213,48 @@ export default function BusinessSetup() {
                     })
                 });
 
-                const data = await response.json();
-                console.log('Server response:', data);
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to create store');
+                if (!storeResponse.ok) {
+                    throw new Error('Failed to create store');
                 }
 
-                // Save business info to localStorage
+                const storeData = await storeResponse.json();
+
+                // Create products
+                for (const product of products) {
+                    const productResponse = await fetch('http://localhost:5000/api/products', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            storeID: storeData.storeID,
+                            chain_type: product.chain_type,
+                            chain_purity: product.chain_purity,
+                            chain_thickness: parseFloat(product.chain_thickness),
+                            chain_length: parseFloat(product.chain_length),
+                            chain_color: product.chain_color,
+                            chain_weight: parseFloat(product.chain_weight),
+                            set_price: parseFloat(product.set_price)
+                        })
+                    });
+
+                    if (!productResponse.ok) {
+                        throw new Error('Failed to create product');
+                    }
+                }
+
+                // Save business info and redirect
                 localStorage.setItem('businessInfo', JSON.stringify({
                     ...businessInfo,
-                    storeID: data.storeID
+                    storeID: storeData.storeID
                 }));
-                
-                // Clean up and set completion flags
-                localStorage.removeItem('billingInfo');
                 localStorage.setItem('completedSetup', 'true');
-
-                // Redirect to dashboard using replace
                 router.replace('/dashboard');
 
             } catch (error) {
                 console.error('Error saving business info:', error);
-                alert('An error occurred while saving your business information.');
+                alert('An error occurred while saving your information.');
             }
         }
     };
@@ -372,6 +425,167 @@ export default function BusinessSetup() {
         </div>
     );
 
+    const renderStep3 = () => (
+        <div className="space-y-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Product Information</h3>
+            <div className="mb-8">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Current Products</h4>
+                {products.length === 0 ? (
+                    <p className="text-gray-500">No products added yet. Please add at least one product.</p>
+                ) : (
+                    <div className="space-y-2">
+                        {products.map((product, index) => (
+                            <div key={index} className="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                                <span>{`${product.chain_purity} ${product.chain_color} Gold ${product.chain_type} Chain`}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setProducts(products.filter((_, i) => i !== index))}
+                                    className="text-red-600 hover:text-red-800"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div> {/* Changed from form to div */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Chain Type</label>
+                        <select
+                            value={currentProduct.chain_type}
+                            onChange={(e) => setCurrentProduct({...currentProduct, chain_type: e.target.value})}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                            <option value="">Select Type</option>
+                            {CHAIN_TYPES.filter(ct => ct.id).map(ct => (
+                                <option key={ct.id} value={ct.id}>{ct.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Purity</label>
+                        <select
+                            value={currentProduct.chain_purity}
+                            onChange={(e) => setCurrentProduct({...currentProduct, chain_purity: e.target.value})}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                            <option value="">Select Purity</option>
+                            {GOLD_PURITIES.filter(gp => gp.value).map(gp => (
+                                <option key={gp.value} value={gp.value}>{gp.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                        <select
+                            value={currentProduct.chain_color}
+                            onChange={(e) => setCurrentProduct({...currentProduct, chain_color: e.target.value})}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                            <option value="">Select Color</option>
+                            {CHAIN_COLORS.filter(cc => cc.id).map(cc => (
+                                <option key={cc.id} value={cc.id}>{cc.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Thickness (mm)</label>
+                        <input
+                            type="number"
+                            value={currentProduct.chain_thickness}
+                            onChange={(e) => setCurrentProduct({
+                                ...currentProduct,
+                                chain_thickness: e.target.value
+                            })}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            step="0.1"
+                            min="0"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Length (inches)</label>
+                        <input
+                            type="number"
+                            value={currentProduct.chain_length}
+                            onChange={(e) => setCurrentProduct({...currentProduct, chain_length: e.target.value})}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            step="0.1"
+                            min="0"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Weight (g)</label>
+                        <input
+                            type="number"
+                            value={currentProduct.chain_weight}
+                            onChange={(e) => setCurrentProduct({...currentProduct, chain_weight: e.target.value})}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            step="0.1"
+                            min="0"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+                        <input
+                            type="number"
+                            value={currentProduct.set_price}
+                            onChange={(e) => setCurrentProduct({...currentProduct, set_price: e.target.value})}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            step="0.01"
+                            min="0"
+                        />
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.preventDefault();
+                        const thickness = parseFloat(currentProduct.chain_thickness);
+                        const length = parseFloat(currentProduct.chain_length);
+                        const weight = parseFloat(currentProduct.chain_weight);
+                        const price = parseFloat(currentProduct.set_price);
+
+                        if (currentProduct.chain_type && 
+                            currentProduct.chain_purity && 
+                            currentProduct.chain_color && 
+                            !isNaN(thickness) && thickness > 0 &&
+                            !isNaN(length) && length > 0 &&
+                            !isNaN(weight) && weight > 0 &&
+                            !isNaN(price) && price > 0) {
+                            
+                            setProducts([...products, {
+                                ...currentProduct,
+                                chain_thickness: thickness.toString(),
+                                chain_length: length.toString(),
+                                chain_weight: weight.toString(),
+                                set_price: price.toString()
+                            }]);
+                            
+                            setCurrentProduct({
+                                chain_type: '',
+                                chain_purity: '',
+                                chain_thickness: '',
+                                chain_length: '',
+                                chain_color: '',
+                                chain_weight: '',
+                                set_price: ''
+                            });
+                        } else {
+                            alert('Please fill in all product fields with valid numbers');
+                        }
+                    }}
+                    className="mt-4 bg-yellow-400 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-300"
+                >
+                    Add Product
+                </button>
+            </div>
+        </div>
+    );
+
     return (
         <>
             <Header />
@@ -383,13 +597,14 @@ export default function BusinessSetup() {
                                 Set Up Your Business Profile
                             </h1>
                             <p className="text-gray-600">
-                                Step {currentStep} of 2
+                                Step {currentStep} of 3
                             </p>
                         </div>
 
                         <form onSubmit={handleSubmit}>
                             {currentStep === 1 && renderStep1()}
                             {currentStep === 2 && renderStep2()}
+                            {currentStep === 3 && renderStep3()}
 
                             <div className="flex justify-between mt-8">
                                 {currentStep > 1 && (
@@ -401,9 +616,9 @@ export default function BusinessSetup() {
                                         ← Previous
                                     </button>
                                 )}
-                                {currentStep === 2 ? (
+                                {currentStep === 3 ? (
                                     <button
-                                        type="submit" // This is important
+                                        type="submit"
                                         className="bg-yellow-400 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-300"
                                     >
                                         Complete Setup

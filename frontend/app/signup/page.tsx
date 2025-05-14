@@ -97,31 +97,38 @@ export default function Signup() {
             return;
         }
 
-        if (userRole === 'Business') {
-            localStorage.setItem('signupData', JSON.stringify(formData));
-            localStorage.setItem('userRole', 'business');
-            // Add this to prevent dashboard redirection
-            localStorage.removeItem('completedSubscription');
-            router.push('/subscription');
-        } else {
-            try {
-                const response = await fetch('http://localhost:5000/api/signup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        first_name: formData.firstName,
-                        last_name: formData.lastName,
-                        email: formData.email,
-                        password: formData.password
-                    }),
-                    credentials: 'include'
-                });
+        // Check for existing email first regardless of user type
+        try {
+            const checkEmailResponse = await fetch('http://localhost:5000/api/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    first_name: formData.firstName,
+                    last_name: formData.lastName,
+                    email: formData.email,
+                    password: formData.password
+                }),
+                credentials: 'include'
+            });
 
-                const data = await response.json();
+            const data = await checkEmailResponse.json();
 
-                if (!response.ok) {
+            if (checkEmailResponse.status === 409) {
+                setError('This email is already registered. Please use a different email or log in.');
+                return;
+            }
+
+            // If email is unique, proceed with the appropriate flow
+            if (userRole === 'Business') {
+                localStorage.setItem('signupData', JSON.stringify(formData));
+                localStorage.setItem('userRole', 'business');
+                localStorage.removeItem('completedSubscription');
+                router.push('/subscription');
+            } else {
+                // For regular signup, we already have the response
+                if (!checkEmailResponse.ok) {
                     throw new Error(data.error || 'Signup failed');
                 }
 
@@ -130,10 +137,10 @@ export default function Signup() {
                 localStorage.setItem('userRole', 'shopper');
                 
                 router.push('/');
-            } catch (error: any) {
-                console.error('Signup error:', error);
-                setError(error.message || 'An error occurred during signup');
             }
+        } catch (error: any) {
+            console.error('Signup error:', error);
+            setError(error.message || 'An error occurred during signup');
         }
     };
 
@@ -141,12 +148,12 @@ export default function Signup() {
         <>
             <Header />
             <main className="min-h-screen bg-[url('/hero-background.jpg')] bg-cover bg-fixed bg-center">
-                {/* Changed to white overlay to match login page */}
                 <div className="min-h-screen w-full bg-white/[0.15] backdrop-blur-sm">
                     <div className="container mx-auto px-4 py-24 flex items-center justify-center min-h-screen">
                         <div className="w-full max-w-md bg-black/80 text-white rounded-xl border border-yellow-400/30 shadow-2xl">
                             <div className="p-8">
                                 <h1 className="text-3xl font-bold text-center mb-6 text-yellow-400">Sign Up</h1>
+                                
                                 <ProfileDropdown onRoleSelect={setUserRole} error={error} />
 
                                 <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -197,12 +204,20 @@ export default function Signup() {
                                         </div>
                                     </div>
 
-                                    <button 
-                                        className="w-full py-3 px-4 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-300 transition-colors duration-200 shadow-lg"
-                                        type="submit"
-                                    >
-                                        {userRole === 'Business' ? 'Continue to Subscription' : 'Sign Up'}
-                                    </button>
+                                    <div className="space-y-4">
+                                        <button 
+                                            className="w-full py-3 px-4 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-300 transition-colors duration-200 shadow-lg"
+                                            type="submit"
+                                        >
+                                            {userRole === 'Business' ? 'Continue to Subscription' : 'Sign Up'}
+                                        </button>
+
+                                        {error && (
+                                            <div className="py-3 px-4 bg-red-500/10 border border-red-500/50 rounded-lg">
+                                                <p className="text-red-400 text-center text-sm">{error}</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </form>
 
                                 <p className="mt-6 text-center text-gray-400">

@@ -63,3 +63,59 @@ def submit_purchase(productID):
     except Exception as e:
         print(f"Error submitting purchase: {e}")
         return jsonify({'error': str(e)}), 500
+
+@product_bp.route('/api/products', methods=['POST'])
+def create_product():
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['storeID', 'chain_type', 'chain_purity', 'chain_thickness', 
+                         'chain_length', 'chain_color', 'chain_weight', 'set_price']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+        try:
+            # Insert product
+            cursor.execute("""
+                INSERT INTO product (
+                    storeID, chain_type, chain_purity, chain_thickness,
+                    chain_length, chain_color, chain_weight, set_price
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                data['storeID'],
+                data['chain_type'],
+                data['chain_purity'],
+                data['chain_thickness'],
+                data['chain_length'],
+                data['chain_color'],
+                data['chain_weight'],
+                data['set_price']
+            ))
+
+            connection.commit()
+            product_id = cursor.lastrowid
+
+            # Return the created product
+            cursor.execute("""
+                SELECT * FROM product WHERE productID = %s
+            """, (product_id,))
+            
+            new_product = cursor.fetchone()
+            return jsonify(new_product), 201
+
+        except Exception as e:
+            connection.rollback()
+            print(f"Database error: {e}")
+            return jsonify({'error': 'Failed to create product'}), 500
+        finally:
+            cursor.close()
+            connection.close()
+
+    except Exception as e:
+        print(f"Error creating product: {e}")
+        return jsonify({'error': str(e)}), 500
