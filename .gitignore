@@ -1,11 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-<<<<<<< HEAD
-# Dependencies
-=======
 # dependencies
 .env
 __pycache__/
->>>>>>> signup
 /frontend/node_modules
 /.pnp
 .pnp.*
@@ -53,10 +49,6 @@ settings.json
 
 # TypeScript
 *.tsbuildinfo
-<<<<<<< HEAD
-next-env.d.ts
-=======
 next-env.d.ts
 settings.json
 node_modules
->>>>>>> signup
