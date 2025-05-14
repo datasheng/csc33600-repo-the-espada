@@ -80,3 +80,32 @@ def create_subscription():
     finally:
         if cursor: cursor.close()
         if connection: connection.close()
+
+@subscription_bp.route('/api/subscriptions/<int:ownerID>', methods=['GET'])
+def get_subscription(ownerID):
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+        cursor.execute("""
+            SELECT * FROM subscriptions 
+            WHERE ownerID = %s 
+            ORDER BY start_date DESC 
+            LIMIT 1
+        """, (ownerID,))
+        
+        subscription = cursor.fetchone()
+        
+        if not subscription:
+            return jsonify({'error': 'No subscription found'}), 404
+
+        return jsonify(subscription), 200
+
+    except Exception as e:
+        print(f"Error fetching subscription: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()

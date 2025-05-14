@@ -403,21 +403,21 @@ export default function Dashboard() {
 
     const renderSettings = () => (
         <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Store Settings</h3>
+            <div className="bg-black p-8 rounded-lg shadow-xl">
+                <h3 className="text-2xl font-bold text-yellow-400 mb-6">Store Settings</h3>
                 <div className="space-y-4">
                     <button
                         onClick={() => router.push('/profile-edit-business')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                        className="w-full text-left px-6 py-4 bg-gray-800 text-white hover:bg-gray-700 rounded-lg transition-colors"
                     >
                         Edit Business Profile
                     </button>
-                    <button
-                        onClick={() => router.push('/subscription')}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    <Link
+                        href="/manage-subscription"
+                        className="block w-full text-left px-6 py-4 bg-gray-800 text-white hover:bg-gray-700 rounded-lg transition-colors"
                     >
-                        Manage Subscription
-                    </button>
+                        View Subscription Status
+                    </Link>
                 </div>
             </div>
         </div>

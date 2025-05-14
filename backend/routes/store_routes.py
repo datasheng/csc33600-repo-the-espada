@@ -159,21 +159,21 @@ def update_store(storeID):
         connection = get_db_connection()
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        # Map frontend field names to database column names
+        # Map frontend field names to database field names
         field_mapping = {
             'name': 'store_name',
             'address': 'address',
             'latitude': 'latitude',
             'longitude': 'longitude',
             'phone': 'phone',
-            'email': 'email'
+            'email': 'email'  # This is the key fix - ensuring email maps correctly
         }
 
         db_field = field_mapping.get(field)
         if not db_field:
-            return jsonify({'error': 'Invalid field'}), 400
+            return jsonify({'error': f'Invalid field: {field}'}), 400
 
-        # Update the specified field
+        # Update the store table with the new value
         cursor.execute(f"""
             UPDATE store 
             SET {db_field} = %s
@@ -183,11 +183,9 @@ def update_store(storeID):
         connection.commit()
 
         # Return updated store data
-        cursor.execute("""
-            SELECT * FROM store WHERE storeID = %s
-        """, (storeID,))
-        
+        cursor.execute("SELECT * FROM store WHERE storeID = %s", (storeID,))
         updated_store = cursor.fetchone()
+        
         return jsonify(updated_store), 200
 
     except Exception as e:

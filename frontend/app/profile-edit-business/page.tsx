@@ -26,7 +26,7 @@ interface BusinessFormValues {
   latitude: string
   longitude: string
   phone: string
-  email: string
+  businessEmail: string  // Changed from 'email' to 'businessEmail'
 }
 
 const defaultUserValues: FormValues = {
@@ -42,7 +42,7 @@ const defaultBusinessValues: BusinessFormValues = {
   latitude: "",
   longitude: "",
   phone: "",
-  email: ""
+  businessEmail: ""
 }
 
 export default function ProfileEditPage() {
@@ -145,7 +145,7 @@ export default function ProfileEditPage() {
           latitude: ownerStore.latitude.toString(),
           longitude: ownerStore.longitude.toString(),
           phone: ownerStore.phone,
-          email: ownerStore.email
+          businessEmail: ownerStore.email
         });
       }
     } catch (error) {
@@ -169,7 +169,6 @@ export default function ProfileEditPage() {
   const handleFieldSubmit = async (fieldName: string) => {
     setSubmittingField(fieldName);
     try {
-        // Check if this is a user field or business field
         if (fieldName in userForm.getValues()) {
             // Handle user update
             const userId = localStorage.getItem('userId');
@@ -223,6 +222,13 @@ export default function ProfileEditPage() {
 
             const formData = businessForm.getValues();
             const value = formData[fieldName as keyof BusinessFormValues];
+            
+            // Add logging
+            console.log('Updating business field:', {
+                fieldName,
+                value,
+                formData
+            });
 
             // Check for blank value
             if (!value || value.trim() === '') {
@@ -238,12 +244,30 @@ export default function ProfileEditPage() {
             const store = stores.find((s: Store) => s.ownerID === parseInt(ownerID));
             if (!store) throw new Error('Store not found');
 
+            // Add logging for store and mapped field
+            console.log('Found store:', store);
+            console.log('Sending update:', {
+                field: fieldName,
+                value: value,
+                storeID: store.storeID
+            });
+
+            // Map frontend field names to backend field names
+            const fieldMapping: Record<string, string> = {
+                name: 'store_name',
+                businessEmail: 'email',  // Change 'email' to 'businessEmail' in BusinessFormValues
+                address: 'address',
+                latitude: 'latitude',
+                longitude: 'longitude',
+                phone: 'phone'
+            };
+
             const response = await fetch(`http://localhost:5000/api/stores/${store.storeID}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    field: fieldName,
-                    value: formData[fieldName as keyof BusinessFormValues]
+                    field: fieldMapping[fieldName] || fieldName,  // Use mapped field name
+                    value: value
                 })
             });
 
@@ -259,7 +283,7 @@ export default function ProfileEditPage() {
                 email: updatedStore.email
             });
 
-            // Updated success message for business fields
+            // Update the success message in handleFieldSubmit
             toast({
                 title: "Success",
                 description: `${
@@ -268,7 +292,8 @@ export default function ProfileEditPage() {
                     fieldName === "latitude" ? "Store Latitude" :
                     fieldName === "longitude" ? "Store Longitude" :
                     fieldName === "phone" ? "Phone Number" :
-                    "Business Email"
+                    fieldName === "businessEmail" ? "Store Email" : 
+                    "Field"  // Add default case and fix syntax
                 } updated successfully`,
             });
         }
@@ -436,7 +461,7 @@ export default function ProfileEditPage() {
                       placeholder: "Enter store name" 
                     },
                     address: { 
-                      label: " Store Address", 
+                      label: "Store Address", 
                       placeholder: "Enter store address" 
                     },
                     latitude: { 
@@ -451,12 +476,12 @@ export default function ProfileEditPage() {
                       label: "Phone Number", 
                       placeholder: "e.g. +1 234 567 8900" 
                     },
-                    email: {
+                    businessEmail: {  // Changed from 'email' to 'businessEmail'
                       label: "Business Email",
                       placeholder: "Enter store email",
                       pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email address",
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Invalid email address",
                       },
                     },
                   }) as [keyof BusinessFormValues, any][]).map(([key, config]) => (
