@@ -11,207 +11,179 @@ import { Loader2 } from "lucide-react"
 import Header from "../components/Header"
 import Footer from "../components/Footer"
 
-interface FormValues {
-  storeName: string
-  email: string
-  phoneNumber: string
+interface BusinessFormValues {
+  name: string
   address: string
+  latitude: string
+  longitude: string
+  phone: string
+  email: string
 }
 
-export default function BusinessProfilePage() {
-  const [loadingField, setLoadingField] = useState<string | null>(null)
+const currentBusinessData = {
+  name: "The Espada",
+  address: "123 Hello St, NY , USA",
+  latitude: "37.7749",
+  longitude: "-122.4194",
+  phone: "+1 123 123 4567",
+  email: "test@email.com"
+}
 
-  const defaultValues: FormValues = {
-    storeName: "",
-    email: "",
-    phoneNumber: "",
-    address: "",
-  }
+const defaultValues: BusinessFormValues = {
+  ...currentBusinessData
+}
 
-  const form = useForm<FormValues>({
+export default function BusinessProfileForm() {
+  const [submittingField, setSubmittingField] = useState<keyof BusinessFormValues | null>(null)
+
+  const form = useForm<BusinessFormValues>({
     defaultValues,
     mode: "onBlur",
   })
 
-  const handleUpdate = async (field: keyof FormValues, value: string) => {
-    setLoadingField(field)
+  const handleFieldSubmit = async (fieldName: keyof BusinessFormValues) => {
+    setSubmittingField(fieldName)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1500))
       toast({
-        title: "Updated",
-        description: `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully.`,
+        title: `${fieldName} updated`,
+        description: `Your ${fieldName} has been updated successfully.`,
       })
-    } catch {
+    } catch (error) {
       toast({
-        title: "Update Failed",
-        description: `Could not update ${field}.`,
+        title: "Error",
+        description: `There was a problem updating ${fieldName}.`,
         variant: "destructive",
       })
     } finally {
-      setLoadingField(null)
+      setSubmittingField(null)
     }
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <>
       <Header />
-
-      <main className="flex-grow container mx-auto py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-red-600 py-10">Edit Business Profile</h1>
-
-          <Card className="border-red-200 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-red-600 to-black text-white">
-              <CardTitle>Business Profile</CardTitle>
-              <CardDescription className="text-white/80">
-                Edit your business information below
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="pt-6">
-              <Form {...form}>
-                <div className="space-y-6">
-                  {/* Store Name */}
-                  <FormField
-                    control={form.control}
-                    name="storeName"
-                    rules={{ required: "Store name is required" }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-red-700">Store Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Enter your store name" />
-                        </FormControl>
-                        <FormMessage />
-                        <Button
-                          type="button"
-                          disabled={loadingField === "storeName"}
-                          onClick={() => handleUpdate("storeName", field.value)}
-                          className="mt-2 bg-red-600 text-white hover:bg-red-700"
-                        >
-                          {loadingField === "storeName" ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Updating...
-                            </>
-                          ) : (
-                            "Update Store Name"
-                          )}
-                        </Button>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Email */}
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    rules={{
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email format",
-                      },
-                    }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-red-700">Business Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" {...field} placeholder="Enter business email" />
-                        </FormControl>
-                        <FormMessage />
-                        <Button
-                          type="button"
-                          disabled={loadingField === "email"}
-                          onClick={() => handleUpdate("email", field.value)}
-                          className="mt-2 bg-red-600 text-white hover:bg-red-700"
-                        >
-                          {loadingField === "email" ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Updating...
-                            </>
-                          ) : (
-                            "Update Email"
-                          )}
-                        </Button>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Phone Number */}
-                  <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    rules={{ required: "Phone number is required" }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-red-700">Phone Number</FormLabel>
-                        <FormControl>
-                          <Input type="tel" {...field} placeholder="Enter phone number" />
-                        </FormControl>
-                        <FormMessage />
-                        <Button
-                          type="button"
-                          disabled={loadingField === "phoneNumber"}
-                          onClick={() => handleUpdate("phoneNumber", field.value)}
-                          className="mt-2 bg-red-600 text-white hover:bg-red-700"
-                        >
-                          {loadingField === "phoneNumber" ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Updating...
-                            </>
-                          ) : (
-                            "Update Phone Number"
-                          )}
-                        </Button>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Address */}
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    rules={{ required: "Address is required" }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-red-700">Business Address</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Enter business address" />
-                        </FormControl>
-                        <FormMessage />
-                        <Button
-                          type="button"
-                          disabled={loadingField === "address"}
-                          onClick={() => handleUpdate("address", field.value)}
-                          className="mt-2 bg-red-600 text-white hover:bg-red-700"
-                        >
-                          {loadingField === "address" ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Updating...
-                            </>
-                          ) : (
-                            "Update Address"
-                          )}
-                        </Button>
-                      </FormItem>
-                    )}
-                  />
+      <main className="min-h-screen bg-[url('/hero-background.jpg')] bg-cover bg-fixed bg-center">
+        <div className="min-h-screen w-full bg-white/[0.15] backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-24">
+            {/* Display Current Business Data */}
+            <Card className="max-w-2xl mx-auto mb-8 bg-black/80 text-white border-yellow-400/30 shadow-2xl">
+              <CardHeader className="border-b border-yellow-400/20 bg-black/40">
+                <CardTitle className="text-2xl text-yellow-400">Business Info</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Your Current Business Data
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <div>
+                  <p className="text-gray-400 text-sm">Name</p>
+                  <p className="text-white text-lg">{currentBusinessData.name}</p>
                 </div>
-              </Form>
-            </CardContent>
+                <div>
+                  <p className="text-gray-400 text-sm">Address</p>
+                  <p className="text-white text-lg">{currentBusinessData.address}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Latitude</p>
+                    <p className="text-white text-lg">{currentBusinessData.latitude}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Longitude</p>
+                    <p className="text-white text-lg">{currentBusinessData.longitude}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Phone</p>
+                  <p className="text-white text-lg">{currentBusinessData.phone}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Email</p>
+                  <p className="text-white text-lg">{currentBusinessData.email}</p>
+                </div>
+              </CardContent>
+            </Card>
 
-            <CardFooter className="bg-white border-t border-red-100 flex justify-end">
-              <p className="text-red-500 text-sm">Last updated: May 10, 2025</p>
-            </CardFooter>
-          </Card>
+            {/* Form to Update Fields */}
+            <Card className="max-w-2xl mx-auto bg-black/80 text-white border-yellow-400/30 shadow-2xl">
+              <CardHeader className="border-b border-yellow-400/20 bg-black/40">
+                <CardTitle className="text-2xl text-yellow-400">Update Business Info</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Edit individual fields below
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-8">
+                <Form {...form}>
+                  <div className="space-y-6">
+                    {(
+                      Object.entries({
+                        name: { label: "Business Name", placeholder: "Enter business name", required: true },
+                        address: { label: "Address", placeholder: "Enter address", required: true },
+                        latitude: { label: "Latitude", placeholder: "e.g. 37.7749", required: true },
+                        longitude: { label: "Longitude", placeholder: "e.g. -122.4194", required: true },
+                        phone: { label: "Phone Number", placeholder: "e.g. +1 234 567 8900", required: true },
+                        email: {
+                          label: "Email Address",
+                          placeholder: "Enter email",
+                          required: true,
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Invalid email address",
+                          },
+                        },
+                      }) as [keyof BusinessFormValues, any][]
+                    ).map(([key, config]) => (
+                      <form
+                        key={key}
+                        onSubmit={form.handleSubmit(() => handleFieldSubmit(key))}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={form.control}
+                          name={key}
+                          rules={{
+                            required: config.required ? `${config.label} is required` : false,
+                            ...(config.pattern && { pattern: config.pattern }),
+                          }}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-300">{config.label}</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder={config.placeholder}
+                                  className="bg-gray-800/90 border-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
+                                />
+                              </FormControl>
+                              <FormMessage className="text-red-400" />
+                              <Button
+                                type="submit"
+                                disabled={submittingField === key}
+                                className="mt-2 bg-yellow-400 text-black hover:bg-yellow-500 transition-colors"
+                              >
+                                {submittingField === key ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Updating...
+                                  </>
+                                ) : (
+                                  `Update ${config.label}`
+                                )}
+                              </Button>
+                            </FormItem>
+                          )}
+                        />
+                      </form>
+                    ))}
+                  </div>
+                </Form>
+              </CardContent>
+              <CardFooter className="bg-black/40 border-t border-yellow-400/20" />
+            </Card>
+          </div>
         </div>
       </main>
-
       <Footer />
-    </div>
+    </>
   )
 }
