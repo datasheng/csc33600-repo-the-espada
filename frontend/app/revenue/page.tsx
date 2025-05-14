@@ -5,8 +5,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 interface Subscription {
-    storeID: number;
-    transactionID: string;
+    subscriptionID: number;
+    ownerID: number;
     start_date: string;
     end_date: string;
     join_fee: number;
@@ -25,7 +25,6 @@ const RevenuePage = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.get<ReportsResponse>('http://localhost:5000/api/reports', { withCredentials: true });
-                // Now we fetch the reports array and total revenue from the backend response.
                 setReports(response.data.reports);
                 setTotalRevenue(response.data.total);
             } catch (error: any) {
@@ -53,8 +52,8 @@ const RevenuePage = () => {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-gray-800">
-                                        <th className="py-3 px-6 text-gray-300">Store ID</th>
-                                        <th className="py-3 px-6 text-gray-300">Transaction ID</th>
+                                        <th className="py-3 px-6 text-gray-300">Subscription ID</th>
+                                        <th className="py-3 px-6 text-gray-300">Owner ID</th>
                                         <th className="py-3 px-6 text-gray-300">Start Date</th>
                                         <th className="py-3 px-6 text-gray-300">End Date</th>
                                         <th className="py-3 px-6 text-gray-300">Join Fee</th>
@@ -63,9 +62,9 @@ const RevenuePage = () => {
                                 <tbody>
                                     {reports.length ? (
                                         reports.map((item, index) => (
-                                            <tr key={index} className="border-b border-gray-700 hover:bg-gray-700">
-                                                <td className="py-3 px-6 text-white">{item.storeID}</td>
-                                                <td className="py-3 px-6 text-white">{item.transactionID}</td>
+                                            <tr key={item.subscriptionID} className="border-b border-gray-700 hover:bg-gray-700">
+                                                <td className="py-3 px-6 text-white">{item.subscriptionID}</td>
+                                                <td className="py-3 px-6 text-white">{item.ownerID}</td>
                                                 <td className="py-3 px-6 text-gray-300">
                                                     {new Date(item.start_date).toLocaleDateString()}
                                                 </td>

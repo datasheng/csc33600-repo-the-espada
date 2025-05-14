@@ -202,6 +202,43 @@ export default function Dashboard() {
         </div>
     );
 
+    const renderTabs = () => (
+        <div className="border-b border-gray-200 mb-6">
+            <nav className="-mb-px flex space-x-8">
+                <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`${
+                        activeTab === 'overview'
+                            ? 'border-yellow-400 text-yellow-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap pb-4 px-1 border-b-2 font-medium`}
+                >
+                    Overview
+                </button>
+                <button
+                    onClick={() => setActiveTab('products')}
+                    className={`${
+                        activeTab === 'products'
+                            ? 'border-yellow-400 text-yellow-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap pb-4 px-1 border-b-2 font-medium`}
+                >
+                    Products
+                </button>
+                <button
+                    onClick={() => setActiveTab('settings')}
+                    className={`${
+                        activeTab === 'settings'
+                            ? 'border-yellow-400 text-yellow-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap pb-4 px-1 border-b-2 font-medium`}
+                >
+                    Settings
+                </button>
+            </nav>
+        </div>
+    );
+
     return (
         <>
             <Header />
@@ -212,38 +249,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="mb-8">
-                        <nav className="flex space-x-4">
-                            <button
-                                onClick={() => setActiveTab('overview')}
-                                className={`px-4 py-2 rounded-lg ${
-                                    activeTab === 'overview'
-                                        ? 'bg-yellow-400 text-black'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                Overview
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('products')}
-                                className={`px-4 py-2 rounded-lg ${
-                                    activeTab === 'products'
-                                        ? 'bg-yellow-400 text-black'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                Products
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('settings')}
-                                className={`px-4 py-2 rounded-lg ${
-                                    activeTab === 'settings'
-                                        ? 'bg-yellow-400 text-black'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                Settings
-                            </button>
-                        </nav>
+                        {renderTabs()}
                     </div>
 
                     {activeTab === 'overview' && renderOverview()}
