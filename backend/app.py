@@ -8,11 +8,14 @@ from routes.report_routes import report_bp
 from routes.store_hours_routes import store_hours_bp
 from routes.signup_routes import signup_bp
 from routes.rating_routes import rating_bp
+from routes.product_routes import product_bp
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key'
 app.config.from_object(Config)
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+CORS(app) 
+
 
 # Import and register blueprints
 app.register_blueprint(store_bp)
@@ -26,6 +29,6 @@ app.register_blueprint(rating_bp)
 if __name__ == '__main__':
     app.run(
         host='localhost',
-        port=5000,
+        port=5050,
         debug=True
     )

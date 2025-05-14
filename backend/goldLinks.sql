@@ -16,13 +16,14 @@ DROP TABLE IF EXISTS users;
 
 -- Step 3: Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
-
 CREATE TABLE users (
     userID INTEGER AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50),
+    -- username VARCHAR(50), (No longer using this here since we
+decided to use first and last names instead of usernames)
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
     user_password VARCHAR(255),
-    email VARCHAR(50) UNIQUE,
-    account_type ENUM('consumer', 'business') DEFAULT 'consumer'
+    email VARCHAR(50) UNIQUE
 );
 
 CREATE TABLE store_owners (
@@ -70,7 +71,8 @@ CREATE TABLE subscriptions (
 CREATE TABLE store_hours (
     storeHourID INT AUTO_INCREMENT PRIMARY KEY,
     storeID INT NOT NULL,
-    day ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
+    daysOpen ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday',
+'Friday', 'Saturday', 'Sunday') NOT NULL,
     openTime TIME,
     closeTime TIME,
     FOREIGN KEY (storeID) REFERENCES store(storeID) ON DELETE CASCADE
@@ -81,10 +83,24 @@ CREATE TABLE user_update (
     userID INT NOT NULL,
     productID INT NOT NULL,
     storeID INT NOT NULL,
-    latest_price DECIMAL(10,2),
+    -- latest_price DECIMAL(10,2), (No longer using this here)
     rating INT CHECK (rating BETWEEN 1 AND 5),
     submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
     FOREIGN KEY (productID) REFERENCES product(productID) ON DELETE CASCADE,
     FOREIGN KEY (storeID) REFERENCES store(storeID) ON DELETE CASCADE
 );
+
+CREATE TABLE price_history (
+    historyID INT AUTO_INCREMENT PRIMARY KEY,
+    userID INT NOT NULL,
+    productID INT NOT NULL,
+    storeID INT NOT NULL,
+    latest_price DECIMAL(10,2) NOT NULL,
+    purchase_date DATETIME NOT NULL,
+    FOREIGN KEY (userID) REFERENCES users(userID),
+    FOREIGN KEY (productID) REFERENCES product(productID),
+    FOREIGN KEY (storeID) REFERENCES store(storeID)
+);
+
+

@@ -12,3 +12,13 @@ def get_store_hours(storeID):
     except Exception as e:
         print(f"Error getting store hours: {e}")
         return jsonify({"error": str(e)}), 500
+    
+@store_hours_bp.route('/api/store-hours/<int:storeID>', methods=['PUT'])
+def update_store_hours(storeID):
+    try:
+        data = request.get_json()
+        store_hours_controller.update_store_hours(storeID, data)
+        return jsonify({"message": "Store hours updated"}), 200
+    except Exception as e:
+        print(f"Error updating store hours: {e}")
+        return jsonify({"error": str(e)}), 500

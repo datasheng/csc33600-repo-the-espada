@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from controllers.store_controller import StoreController
 
 store_bp = Blueprint('store_bp', __name__)
@@ -31,4 +31,14 @@ def get_store_hours(storeID):
         return jsonify(hours)
     except Exception as e:
         print(f"Error getting store hours: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@store_bp.route('/api/stores/<int:storeID>', methods=['PUT'])
+def update_store(storeID):
+    try:
+        data = request.get_json()
+        store_controller.update_store_info(storeID, data)
+        return jsonify({"message": "Store updated"}), 200
+    except Exception as e:
+        print(f"Error updating store info: {e}")
         return jsonify({"error": str(e)}), 500

@@ -26,3 +26,39 @@ class StoreHoursController:
         finally:
             cursor.close()
             connection.close()
+
+
+    def update_store_hours(self, storeID: int, hours_data: List[dict]):
+        connection = get_db_connection()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+        try:
+            for entry in hours_data:
+                day = entry['day']
+                open_time = entry['openTime']
+                close_time = entry['closeTime']
+
+                cursor.execute("""
+                    SELECT storeHourID FROM store_hours 
+                    WHERE storeID = %s AND day = %s
+                """, (storeID, day))
+                exists = cursor.fetchone()
+
+                if exists:
+                    cursor.execute("""
+                        UPDATE store_hours SET openTime = %s, closeTime = %s
+                        WHERE storeID = %s AND day = %s
+                    """, (open_time, close_time, storeID, day))
+                else:
+                    cursor.execute("""
+                        INSERT INTO store_hours (storeID, day, openTime, closeTime)
+                        VALUES (%s, %s, %s, %s)
+                    """, (storeID, day, open_time, close_time))
+
+            connection.commit()
+        except Exception as e:
+            print(f"Error updating store hours: {e}")
+            connection.rollback()
+            raise e
+        finally:
+            cursor.close()
+            connection.close()
