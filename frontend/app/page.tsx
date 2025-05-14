@@ -7,6 +7,7 @@ import Link from 'next/link'
 import './home.css'
 import { UsersIcon, ShoppingBagIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
+import GoldChatbot from './components/GoldChatbot'
 
 export default function Home() {
   const [currentBg, setCurrentBg] = useState(1);
@@ -318,6 +319,7 @@ export default function Home() {
       </section>
 
       <Footer />
+      <GoldChatbot />
     </div>
   );
 }
